@@ -1,0 +1,254 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Ink (neutral) scale — near-black athletic base ---- */
+  --color-ink-950: #0a0b0d;
+  --color-ink-900: #101215;
+  --color-ink-850: #14171b;
+  --color-ink-800: #171a1f;
+  --color-ink-750: #1c2026;
+  --color-ink-700: #22262d;
+  --color-ink-600: #2e333c;
+  --color-ink-500: #3d444f;
+  --color-ink-400: #5a6270;
+  --color-ink-300: #838b99;
+  --color-ink-200: #b4bbc7;
+  --color-ink-100: #e4e8ee;
+  --color-ink-50: #f7f9fb;
+
+  /* ---- Volt (accent) — neon lime ---- */
+  --color-volt-100: #f7ffdc;
+  --color-volt-200: #f0ffb8;
+  --color-volt-300: #e4ff77;
+  --color-volt-400: #d7ff3e;
+  --color-volt-500: #b6f024;
+  --color-volt-600: #a3d90a;
+  --color-volt-700: #7a9e1b;
+  --color-volt-800: #4f660f;
+
+  /* ---- Semantic ---- */
+  --color-ok-400: #5ee89a;
+  --color-ok-500: #3ddc84;
+  --color-ok-600: #21b566;
+  --color-warn-400: #ffc34d;
+  --color-warn-500: #ffb020;
+  --color-warn-600: #d98a06;
+  --color-bad-400: #ff7070;
+  --color-bad-500: #ff4d4d;
+  --color-bad-600: #d92f2f;
+  --color-info-400: #7ea5ff;
+  --color-info-500: #5b8cff;
+  --color-info-600: #3b6be0;
+
+  /* ---- Type ----
+     System stack only: next/font/google would stall the build on a
+     throttled connection. Display reads athletic via weight + tracking. */
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+
+  /* ---- Motion ---- */
+  --animate-fade-up: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fadeIn 0.3s ease both;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-sheet-up: sheetUp 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-ring: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-scan: scan 2.4s ease-in-out infinite;
+  --animate-count-up: countUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--scan-height, 180px));
+    opacity: 0;
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  overflow-x: hidden;
+  background-color: var(--color-ink-950);
+  color: var(--color-ink-100);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-volt-400);
+  color: var(--color-ink-950);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-volt-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- Utilities ---- */
+
+@utility num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+@utility safe-b {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+}
+
+@utility safe-t {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-600) transparent;
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-ink-600);
+    border-radius: 999px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@utility card-shine {
+  background-image: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.045) 0%,
+    rgba(255, 255, 255, 0) 45%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+}
+
+@utility volt-glow {
+  box-shadow: 0 0 0 1px rgba(215, 255, 62, 0.28),
+    0 8px 32px -8px rgba(215, 255, 62, 0.35);
+}
+
+@utility shimmer-band {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}

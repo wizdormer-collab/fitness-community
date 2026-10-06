@@ -1,0 +1,58 @@
+{
+  "name": "Show Up — Find your people. Show up. Get better.",
+  "short_name": "Show Up",
+  "description": "A Lagos fitness community app: discover workouts and groups near you, commit to a session, check in, and track your progress.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0b0d",
+  "theme_color": "#0a0b0d",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["health", "fitness", "social"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log workout",
+      "short_name": "Log",
+      "description": "Record a strength, run or other session",
+      "url": "/app/log",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Check in",
+      "short_name": "Check in",
+      "description": "Scan the venue QR code for your session",
+      "url": "/app/checkin",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Sessions",
+      "short_name": "Sessions",
+      "description": "Find a workout happening near you",
+      "url": "/app/sessions",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
