@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, Badge, SectionHeader } from "@/components/ui/card";
+import { List, Badge, SectionHeader } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/header";
 import { SegmentedControl } from "@/components/ui/controls";
 import { EmptyState } from "@/components/ui/state";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { NOTIFICATIONS } from "@/lib/mock-data";
 import { NOTIFICATION_KINDS, type NotificationKind } from "@/lib/types";
 import { usePrototype } from "@/lib/prototype-state";
+import { Glyph } from "@/components/ui/glyph";
 
 type Filter = "all" | "unread" | NotificationKind;
 
@@ -50,7 +51,7 @@ export default function Notifications() {
             <button
               type="button"
               onClick={markAllNotificationsRead}
-              className="rounded-lg border border-ink-600 px-2.5 py-1.5 text-[11px] font-semibold text-ink-200 transition hover:border-volt-400 hover:text-volt-400"
+              className="rounded-lg border border-ink-600 px-2.5 py-1.5 text-[11px] font-semibold text-ink-200 transition hover:border-volt-400 hover:text-volt-700"
             >
               Mark all read
             </button>
@@ -72,13 +73,13 @@ export default function Notifications() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          emoji="🔕"
+          icon="bell"
           title="Nothing here yet"
           body="Nudges appear when a session you joined is about to start, someone interacts with your workout, or your weekly goal is close."
           action={
             <Link
               href="/app/sessions"
-              className="text-sm font-semibold text-volt-400"
+              className="text-sm font-semibold text-volt-700"
             >
               Browse sessions →
             </Link>
@@ -89,29 +90,29 @@ export default function Notifications() {
           {today.length > 0 && (
             <section className="mb-6">
               <SectionHeader label="Recent" hint="Last few hours" />
-              <Card className="divide-y divide-ink-700 p-0">
+              <List variant="surface">
                 {today.map((n) => (
                   <Row key={n.id} n={n} />
                 ))}
-              </Card>
+              </List>
             </section>
           )}
 
           {earlier.length > 0 && (
             <section className="mb-6">
               <SectionHeader label="Earlier" />
-              <Card className="divide-y divide-ink-700 p-0">
+              <List variant="surface">
                 {earlier.map((n) => (
                   <Row key={n.id} n={n} />
                 ))}
-              </Card>
+              </List>
             </section>
           )}
         </>
       )}
 
-      <div className="rounded-2xl border border-dashed border-ink-700 bg-ink-850/60 p-4">
-        <p className="text-[13px] leading-relaxed text-ink-400">
+      <div className="mt-7 border-l-2 border-volt-600 pl-4">
+        <p className="text-[13px] leading-relaxed text-ink-500">
           <span className="font-semibold text-ink-200">Notification rules</span>{" "}
           are deliberately narrow in v1: session reminders, accountability
           nudges and replies on your posts. Marketing pushes are opt-in and
@@ -137,13 +138,15 @@ function Row({
     >
       <span
         className={cn(
-          "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg",
-          n.isRead ? "bg-ink-750" : "bg-ink-700 ring-1 ring-volt-400/30",
+          "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+          n.isRead
+            ? "bg-ink-750 text-ink-400"
+            : "bg-volt-400/25 text-volt-800 ring-1 ring-volt-600/30",
         )}
       >
-        <span aria-hidden>{kind.emoji}</span>
+        <Glyph name={n.kind} size={20} />
         {!n.isRead && (
-          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-volt-400 ring-2 ring-ink-800" />
+          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-volt-600 ring-2 ring-ink-800" />
         )}
       </span>
       <div className="min-w-0 flex-1">
@@ -163,7 +166,7 @@ function Row({
         )}
         <div className="mt-2 flex items-center gap-2">
           <Badge tone={n.isRead ? "muted" : "volt"}>{kind.label}</Badge>
-          {!n.isRead && <span className="text-[11px] font-bold text-volt-400">New</span>}
+          {!n.isRead && <span className="text-[11px] font-bold text-volt-700">New</span>}
         </div>
       </div>
     </div>

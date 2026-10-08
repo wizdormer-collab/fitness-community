@@ -39,7 +39,7 @@ export default function SignIn() {
             className={cn(
               "flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition",
               method === m.id
-                ? "bg-volt-400 text-ink-950"
+                ? "bg-volt-400 text-onvolt"
                 : "text-ink-300 hover:text-ink-100",
             )}
           >
@@ -54,8 +54,8 @@ export default function SignIn() {
         </span>
         <span className="flex items-center gap-2 rounded-xl border border-ink-600 bg-ink-850 px-4 py-3.5 focus-within:border-volt-400">
           {method === "phone" && (
-            <span className="shrink-0 text-sm font-semibold text-ink-300">
-              🇳🇬 +234
+            <span className="shrink-0 text-sm font-semibold text-ink-400">
+              NG +234
             </span>
           )}
           <input

@@ -8,20 +8,12 @@ import { Comment, Heart } from "@/components/ui/icons";
 import { usePrototype } from "@/lib/prototype-state";
 import type { Post } from "@/lib/types";
 
-const ACCENTS: Record<string, string> = {
-  run: "from-info-500/20 to-info-600/5 ring-info-500/25",
-  pr: "from-volt-400/20 to-volt-600/5 ring-volt-400/30",
-  streak: "from-warn-500/20 to-warn-600/5 ring-warn-500/30",
-  photo: "from-[#c084fc]/20 to-[#8b3ff0]/5 ring-[#c084fc]/25",
-  recovery: "from-ok-500/20 to-ok-600/5 ring-ok-500/25",
-};
-
-const ACCENT_LABEL: Record<string, string> = {
-  run: "Run logged",
-  pr: "Personal record",
-  streak: "Streak",
-  photo: "Photo",
-  recovery: "Recovery",
+const ACCENTS: Record<string, { tone: "ok" | "warn" | "info" | "volt" | "muted"; label: string }> = {
+  run: { tone: "info", label: "Run logged" },
+  pr: { tone: "volt", label: "Personal record" },
+  streak: { tone: "warn", label: "Streak" },
+  photo: { tone: "muted", label: "Photo" },
+  recovery: { tone: "ok", label: "Recovery" },
 };
 
 export function PostCard({ post }: { post: Post }) {
@@ -34,20 +26,6 @@ export function PostCard({ post }: { post: Post }) {
 
   return (
     <Card className="overflow-hidden animate-fade-up">
-      {accent && (
-        <div
-          className={cn(
-            "flex items-center justify-between bg-gradient-to-r px-4 py-2 ring-1 ring-inset",
-            accent,
-          )}
-        >
-          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-200">
-            {ACCENT_LABEL[post.accent ?? ""]}
-          </span>
-          <span className="num text-[10px] text-ink-400">{post.ago} ago</span>
-        </div>
-      )}
-
       <div className="p-4">
         <div className="flex items-center gap-3">
           <Avatar initials={initialsOf(post.authorName)} tone={post.authorTone} size="sm" />
@@ -55,7 +33,7 @@ export function PostCard({ post }: { post: Post }) {
             <p className="truncate text-sm font-bold text-ink-50">
               {post.authorName}
             </p>
-            <p className="num truncate text-[11px] text-ink-500">
+            <p className="num truncate text-[12px] text-ink-500">
               {post.ago} ago
             </p>
           </div>
@@ -63,21 +41,25 @@ export function PostCard({ post }: { post: Post }) {
           {post.kind === "achievement" && <Badge tone="volt">PR</Badge>}
         </div>
 
-        <p className="mt-3 text-[15px] leading-relaxed text-ink-100">
+        {accent && (
+          <p className="mt-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-volt-700">
+            <span className="h-px w-5 bg-volt-600" aria-hidden />
+            {accent.label}
+          </p>
+        )}
+
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-100">
           {post.text}
         </p>
 
         {post.stats.length > 0 && (
-          <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="mt-3.5 grid grid-cols-3 divide-x divide-ink-700 border-y border-ink-700">
             {post.stats.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-xl bg-ink-750 px-2.5 py-2.5 text-center"
-              >
-                <p className="text-[9px] font-bold uppercase tracking-wider text-ink-500">
+              <div key={s.label} className="px-2.5 py-2.5 text-center">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
                   {s.label}
                 </p>
-                <p className="num mt-1 text-[13px] font-bold text-volt-400">
+                <p className="num mt-0.5 text-[13px] font-bold text-volt-700">
                   {s.value}
                 </p>
               </div>
@@ -93,7 +75,7 @@ export function PostCard({ post }: { post: Post }) {
             aria-label="Like"
             className={cn(
               "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95",
-              liked ? "text-volt-400" : "text-ink-400 hover:text-ink-200",
+              liked ? "text-volt-700" : "text-ink-400 hover:text-ink-200",
             )}
           >
             <Heart className="h-4 w-4" filled={liked} />
@@ -134,7 +116,7 @@ export function PostCard({ post }: { post: Post }) {
                   <p className="mt-0.5 text-[13px] leading-snug text-ink-300">
                     {c.text}
                   </p>
-                  <p className="num mt-1 text-[10px] text-ink-600">{c.ago}</p>
+                  <p className="num mt-1 text-[11px] text-ink-600">{c.ago}</p>
                 </div>
               </li>
             ))}

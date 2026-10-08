@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { FieldLabel, OnboardingShell } from "@/components/onboarding-shell";
+import { List, ListRow } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
 import { usePrototype } from "@/lib/prototype-state";
 import { FITNESS_GOALS, type FitnessGoalId } from "@/lib/types";
+import { Glyph } from "@/components/ui/glyph";
 
 export default function Goals() {
   const { profile, setDraft } = usePrototype();
@@ -40,34 +42,49 @@ export default function Goals() {
         Select your goals
       </FieldLabel>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      <List variant="surface">
         {FITNESS_GOALS.map((g) => {
           const active = selected.includes(g.id);
           return (
-            <button
+            <ListRow
               key={g.id}
-              type="button"
+              layout="block"
+              className={cn("py-3.5", active && "bg-volt-400/[0.12]")}
               onClick={() => toggle(g.id)}
-              aria-pressed={active}
-              className={cn(
-                "flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-left text-sm font-semibold transition active:scale-[0.97]",
-                active
-                  ? "border-volt-400 bg-volt-400 text-ink-950"
-                  : "border-ink-700 bg-ink-800 text-ink-200 hover:border-ink-600",
-              )}
             >
-              <span className="text-base" aria-hidden>
-                {g.emoji}
+              <span className="flex items-center gap-3">
+                <Glyph
+                  name={g.id}
+                  size={19}
+                  className={active ? "text-volt-700" : "text-ink-500"}
+                />
+                <span
+                  className={cn(
+                    "min-w-0 flex-1 text-sm font-semibold",
+                    active ? "text-volt-800" : "text-ink-100",
+                  )}
+                >
+                  {g.label}
+                </span>
+                <span
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                    active
+                      ? "bg-volt-400 text-onvolt"
+                      : "border border-ink-600 text-transparent",
+                  )}
+                >
+                  <Glyph name="check" size={12} strokeWidth={3.4} />
+                </span>
               </span>
-              <span className="min-w-0 leading-tight">{g.label}</span>
-            </button>
+            </ListRow>
           );
         })}
-      </div>
+      </List>
 
-      <div className="mt-7 rounded-2xl border border-dashed border-ink-700 bg-ink-850/60 p-4">
-        <p className="text-[13px] leading-relaxed text-ink-400">
-          <span className="font-semibold text-ink-200">Tip:</span> choosing two
+      <div className="mt-7 border-l-2 border-volt-600 pl-4">
+        <p className="text-[13px] leading-relaxed text-ink-500">
+          <span className="font-semibold text-ink-100">Tip:</span> choosing two
           or three keeps recommendations sharp. Chasing weight loss and
           endurance at once is normal — picking all nine just dilutes the
           matches.

@@ -1,11 +1,12 @@
 import { cn } from "@/lib/cn";
 import { activityOf } from "@/lib/format";
+import { Glyph } from "@/components/ui/glyph";
 
 /** Line + area trend (distance, weekly volume). */
 export function Sparkline({
   data,
   height = 72,
-  accent = "#d7ff3e",
+  accent = "#7a9e1b",
   className,
 }: {
   data: number[];
@@ -64,7 +65,7 @@ export function Sparkline({
 export function BarChart({
   data,
   height = 96,
-  accent = "#d7ff3e",
+  accent = "#7a9e1b",
   className,
 }: {
   data: number[];
@@ -88,18 +89,18 @@ export function BarChart({
               background:
                 i === data.length - 1
                   ? accent
-                  : "rgba(215,255,62,0.28)",
+                  : "rgba(122,158,27,0.30)",
               minHeight: 4,
             }}
           />
-          <span className="num text-[9px] text-ink-500">{v}</span>
+          <span className="num text-[11px] text-ink-500">{v}</span>
         </div>
       ))}
     </div>
   );
 }
 
-const HEAT = ["#171a1f", "#4f660f", "#7a9e1b", "#d7ff3e"];
+const HEAT = ["#e9edf2", "#eef7cf", "#b9dd57", "#7a9e1b"];
 
 /** 90-day consistency grid (PRD §16). Column-major = calendar weeks. */
 export function Heatmap({
@@ -150,16 +151,16 @@ export function ActivitySplit({
           <div key={it.activity} className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 text-ink-200">
-                <span aria-hidden>{a.emoji}</span>
+                <Glyph name={a.id} size={14} />
                 {a.label}
               </span>
               <span className="num font-semibold text-ink-300">
                 {it.count} · {it.pct}%
               </span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-750">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-ink-700">
               <div
-                className="h-full rounded-full bg-volt-400"
+                className="h-full rounded-full bg-volt-600"
                 style={{ width: `${it.pct}%` }}
               />
             </div>

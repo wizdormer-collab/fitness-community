@@ -122,7 +122,7 @@ export function FieldLabel({
         {children}
       </span>
       {count && (
-        <span className="num text-[11px] font-semibold text-volt-400">
+        <span className="num text-[11px] font-semibold text-volt-700">
           {count}
         </span>
       )}

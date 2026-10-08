@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { FieldLabel, OnboardingShell } from "@/components/onboarding-shell";
 import { Avatar, AvatarStack } from "@/components/ui/avatar";
 import { Button, Chip } from "@/components/ui/controls";
-import { Badge } from "@/components/ui/card";
+import { Badge, List, ListRow } from "@/components/ui/card";
+import { Glyph, GlyphTile } from "@/components/ui/glyph";
 import { StreakFlame } from "@/components/ui/metrics";
 import { cn } from "@/lib/cn";
 import { usePrototype } from "@/lib/prototype-state";
@@ -95,47 +96,40 @@ export default function Match() {
         Recommended communities
       </FieldLabel>
 
-      <div className="space-y-3">
-        {ranked.map((c, i) => {
+      <List variant="surface">
+        {ranked.map((c) => {
           const active = joined.includes(c.id);
           return (
-            <div
+            <ListRow
               key={c.id}
+              layout="block"
               className={cn(
-                "rounded-2xl border p-4 transition animate-fade-up",
-                active
-                  ? "border-volt-400 bg-volt-400/[0.07]"
-                  : "border-ink-700 bg-ink-800",
+                "animate-fade-up py-4",
+                active && "bg-volt-400/[0.12]",
               )}
-              style={{ animationDelay: `${i * 80}ms` }}
             >
-              <div className="flex items-start gap-3.5">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink-750 text-2xl">
-                  {c.emoji}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-display text-[15px] font-bold leading-tight text-ink-50">
+              <span className="flex items-start gap-3.5">
+                <GlyphTile name={c.activity} size="md" />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="font-display text-[15px] font-bold leading-tight text-ink-50">
                       {c.name}
-                    </h3>
+                    </span>
                     {c.badge && <Badge tone="volt">{c.badge}</Badge>}
-                  </div>
-                  <p className="mt-1 text-[13px] leading-snug text-ink-400">
+                  </span>
+                  <span className="mt-1 block text-[13px] leading-snug text-ink-400">
                     {c.tagline}
-                  </p>
-                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                    <Chip size="sm" selected={false}>
-                      {areaLabel(c.area)}
+                  </span>
+                  <span className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                    <Chip size="sm">{areaLabel(c.area)}</Chip>
+                    <Chip size="sm">
+                      <Glyph name={c.activity} size={13} strokeWidth={2} />
+                      {activityOf(c.activity).label}
                     </Chip>
-                    <Chip size="sm" selected={false}>
-                      {activityOf(c.activity).emoji} {activityOf(c.activity).label}
-                    </Chip>
-                    <Chip size="sm" selected={false}>
-                      {c.cadence}
-                    </Chip>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
+                    <Chip size="sm">{c.cadence}</Chip>
+                  </span>
+                  <span className="mt-3 flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-2">
                       <AvatarStack
                         people={c.featuredMemberIds.slice(0, 3).map((id) => {
                           const u = userById(id);
@@ -147,7 +141,7 @@ export default function Match() {
                       <span className="num text-[11px] text-ink-400">
                         {c.members.toLocaleString("en-NG")} members
                       </span>
-                    </div>
+                    </span>
                     <button
                       type="button"
                       onClick={() => toggle(c.id)}
@@ -155,51 +149,50 @@ export default function Match() {
                         "rounded-lg px-4 py-2 text-xs font-bold transition active:scale-95",
                         active
                           ? "border border-ink-600 bg-ink-750 text-ink-200"
-                          : "bg-volt-400 text-ink-950 hover:bg-volt-300",
+                          : "bg-volt-400 text-onvolt hover:bg-volt-500",
                       )}
                     >
-                      {active ? "Joined ✓" : "Join"}
+                      {active ? "Joined" : "Join"}
                     </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  </span>
+                </span>
+              </span>
+            </ListRow>
           );
         })}
-      </div>
+      </List>
 
       <div className="mt-8">
         <FieldLabel>Compatible training partners</FieldLabel>
-        <div className="space-y-2.5">
+        <List variant="surface">
           {partners.map(({ u, shared }) => (
-            <div
-              key={u.id}
-              className="flex items-center gap-3 rounded-2xl border border-ink-700 bg-ink-800 p-3.5"
-            >
-              <Avatar initials={u.initials} tone={u.tone} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-ink-50">
-                  {u.name}
-                </p>
-                <p className="num truncate text-[11px] text-ink-400">
-                  {areaLabel(u.area)} · {u.fitnessLevel} ·{" "}
-                  {shared > 0
-                    ? `${shared} shared ${shared === 1 ? "activity" : "activities"}`
-                    : "compatible schedule"}
-                </p>
-              </div>
-              <Chip size="sm" selected={false} onClick={() => undefined}>
-                View
-              </Chip>
-            </div>
+            <ListRow key={u.id}>
+              <span className="flex items-center gap-3">
+                <Avatar initials={u.initials} tone={u.tone} size="md" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold text-ink-50">
+                    {u.name}
+                  </span>
+                  <span className="num block truncate text-[11px] text-ink-400">
+                    {areaLabel(u.area)} · {u.fitnessLevel} ·{" "}
+                    {shared > 0
+                      ? `${shared} shared ${shared === 1 ? "activity" : "activities"}`
+                      : "compatible schedule"}
+                  </span>
+                </span>
+                <Chip size="sm" onClick={() => undefined}>
+                  View
+                </Chip>
+              </span>
+            </ListRow>
           ))}
-        </div>
+        </List>
       </div>
 
-      <div className="mt-7 flex items-center justify-between gap-3 rounded-2xl border border-ink-700 bg-ink-850 p-4">
+      <div className="mt-7 flex items-center justify-between gap-3 border-l-2 border-volt-600 pl-4">
         <div className="min-w-0">
           <p className="text-sm font-bold text-ink-100">Your first week</p>
-          <p className="mt-0.5 text-xs leading-snug text-ink-400">
+          <p className="mt-0.5 text-xs leading-snug text-ink-500">
             {profile.preferredDays.length} training{" "}
             {profile.preferredDays.length === 1 ? "day" : "days"} ·{" "}
             {profile.goals.length}{" "}

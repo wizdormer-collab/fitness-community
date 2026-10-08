@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, SegmentedControl, Tag, Toggle } from "@/components/ui/controls";
-import { Card, SectionHeader } from "@/components/ui/card";
+import { List, ListRow, SectionHeader } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/header";
 import { usePrototype } from "@/lib/prototype-state";
 import { activityOf, pace } from "@/lib/format";
 import { ACTIVITIES, type ActivityId } from "@/lib/types";
+import { Glyph } from "@/components/ui/glyph";
 
 type Mode = "strength" | "run" | "other";
 
@@ -94,8 +95,8 @@ export default function LogWorkout() {
   if (saved) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center text-center animate-pop">
-        <span className="text-5xl" aria-hidden>
-          🎉
+        <span className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-volt-400/25 text-volt-800">
+          <Glyph name="trophy" size={32} />
         </span>
         <h1 className="mt-4 font-display text-2xl font-extrabold text-ink-50">
           Workout logged
@@ -134,14 +135,14 @@ export default function LogWorkout() {
       />
 
       {mode === "strength" && (
-        <section className="mb-6">
+        <section className="mb-7">
           <SectionHeader
             label="Exercises"
             action={{ label: "+ Add", href: "#" }}
           />
-          <div className="space-y-3">
+          <List variant="surface">
             {rows.map((r) => (
-              <Card key={r.id} className="p-3.5">
+              <ListRow key={r.id} layout="block" className="py-4">
                 <div className="flex gap-2">
                   <input
                     value={r.exercise}
@@ -159,7 +160,7 @@ export default function LogWorkout() {
                   </button>
                 </div>
 
-                <div className="mt-2.5 grid grid-cols-3 gap-2">
+                <div className="mt-3 grid grid-cols-3 gap-2">
                   {(
                     [
                       { key: "sets", label: "Sets", step: 1, min: 1 },
@@ -168,7 +169,7 @@ export default function LogWorkout() {
                     ] as const
                   ).map((f) => (
                     <label key={f.key} className="block">
-                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-ink-500">
+                      <span className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-ink-500">
                         {f.label}
                       </span>
                       <span className="flex items-center rounded-lg border border-ink-700 bg-ink-850">
@@ -208,9 +209,9 @@ export default function LogWorkout() {
                     </label>
                   ))}
                 </div>
-              </Card>
+              </ListRow>
             ))}
-          </div>
+          </List>
           <Button variant="secondary" full onClick={addRow} className="mt-3">
             + Add exercise
           </Button>
@@ -218,39 +219,43 @@ export default function LogWorkout() {
       )}
 
       {mode === "run" && (
-        <section className="mb-6">
+        <section className="mb-7">
           <SectionHeader label="Run details" />
-          <Card className="space-y-4 p-4">
-            <Stepper
-              label="Distance"
-              unit="km"
-              value={distanceKm}
-              step={1}
-              min={0.5}
-              onChange={setDistance}
-            />
-            <Stepper
-              label="Duration"
-              unit="min"
-              value={durationMin}
-              step={5}
-              min={5}
-              onChange={setDuration}
-            />
-            <div className="rounded-xl bg-ink-750 p-3.5 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
+          <List variant="surface">
+            <ListRow layout="block" className="py-3.5">
+              <Stepper
+                label="Distance"
+                unit="km"
+                value={distanceKm}
+                step={1}
+                min={0.5}
+                onChange={setDistance}
+              />
+            </ListRow>
+            <ListRow layout="block" className="py-3.5">
+              <Stepper
+                label="Duration"
+                unit="min"
+                value={durationMin}
+                step={5}
+                min={5}
+                onChange={setDuration}
+              />
+            </ListRow>
+            <ListRow layout="block" className="py-4 text-center">
+              <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-500">
                 Average pace
-              </p>
-              <p className="num mt-1 font-display text-2xl font-bold text-volt-400">
+              </span>
+              <span className="num mt-1 block font-display text-2xl font-bold text-volt-700">
                 {pace(durationMin, distanceKm)}
-              </p>
-            </div>
-          </Card>
+              </span>
+            </ListRow>
+          </List>
         </section>
       )}
 
       {mode === "other" && (
-        <section className="mb-6">
+        <section className="mb-7">
           <SectionHeader label="Activity" />
           <div className="grid grid-cols-3 gap-2.5">
             {ACTIVITIES.map((a) => (
@@ -258,18 +263,17 @@ export default function LogWorkout() {
                 key={a.id}
                 type="button"
                 onClick={() => setActivity(a.id)}
+                aria-pressed={activity === a.id}
                 className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3.5 transition ${
                   activity === a.id
                     ? "border-volt-400 bg-volt-400/[0.1]"
                     : "border-ink-700 bg-ink-800"
                 }`}
               >
-                <span className="text-xl" aria-hidden>
-                  {a.emoji}
-                </span>
+                <Glyph name={a.id} size={21} />
                 <span
-                  className={`text-[11px] font-bold ${
-                    activity === a.id ? "text-volt-400" : "text-ink-400"
+                  className={`text-xs font-bold ${
+                    activity === a.id ? "text-volt-700" : "text-ink-400"
                   }`}
                 >
                   {a.label}
@@ -281,36 +285,41 @@ export default function LogWorkout() {
       )}
 
       {/* Shared settings */}
-      <section className="mb-6">
+      <section className="mb-7">
         <SectionHeader label="Details" />
-        <Card className="divide-y divide-ink-700 p-0 px-4">
-          <Stepper
-            label="Duration"
-            unit="min"
-            value={durationMin}
-            step={5}
-            min={5}
-            onChange={setDuration}
-            borderless
-          />
-          <label className="block py-3.5">
-            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-ink-500">
-              Location
-            </span>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Where did you train?"
-              className="w-full rounded-lg border border-ink-700 bg-ink-850 px-3 py-2.5 text-sm text-ink-100 outline-none placeholder:text-ink-600 focus:border-volt-400"
+        <List variant="surface">
+          <ListRow layout="block" className="py-3.5">
+            <Stepper
+              label="Duration"
+              unit="min"
+              value={durationMin}
+              step={5}
+              min={5}
+              onChange={setDuration}
             />
-          </label>
-          <Toggle
-            checked={shared}
-            onChange={setShared}
-            label="Share to my feed"
-            hint={shared ? "Your community will see this workout" : "Only you can see it"}
-          />
-        </Card>
+          </ListRow>
+          <ListRow layout="block" className="py-3.5">
+            <label className="block">
+              <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                Location
+              </span>
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Where did you train?"
+                className="w-full rounded-lg border border-ink-700 bg-ink-850 px-3 py-2.5 text-sm text-ink-100 outline-none placeholder:text-ink-600 focus:border-volt-400"
+              />
+            </label>
+          </ListRow>
+          <ListRow layout="block" className="py-3.5">
+            <Toggle
+              checked={shared}
+              onChange={setShared}
+              label="Share to my feed"
+              hint={shared ? "Your community will see this workout" : "Only you can see it"}
+            />
+          </ListRow>
+        </List>
       </section>
 
       <Button full size="lg" onClick={save}>
@@ -332,7 +341,6 @@ function Stepper({
   step,
   min,
   onChange,
-  borderless = false,
 }: {
   label: string;
   unit: string;
@@ -340,14 +348,9 @@ function Stepper({
   step: number;
   min: number;
   onChange: (v: number) => void;
-  borderless?: boolean;
 }) {
   return (
-    <div
-      className={`flex items-center justify-between gap-3 ${
-        borderless ? "py-3.5" : ""
-      }`}
-    >
+    <div className="flex items-center justify-between gap-3">
       <span className="text-sm font-medium text-ink-200">
         {label}
         <span className="num ml-1.5 text-xs text-ink-500">{unit}</span>

@@ -1,13 +1,14 @@
 import { cn } from "@/lib/cn";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
 
 export function EmptyState({
-  emoji,
+  icon,
   title,
   body,
   action,
   className,
 }: {
-  emoji: string;
+  icon: GlyphName;
   title: string;
   body: string;
   action?: React.ReactNode;
@@ -20,8 +21,8 @@ export function EmptyState({
         className,
       )}
     >
-      <span className="mb-3 text-3xl" aria-hidden>
-        {emoji}
+      <span className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-ink-750 text-ink-300">
+        <Glyph name={icon} size={22} />
       </span>
       <h3 className="font-display text-base font-bold text-ink-100">{title}</h3>
       <p className="mt-1.5 max-w-[26ch] text-sm leading-relaxed text-ink-400">
@@ -40,7 +41,7 @@ export function Skeleton({
   rounded?: string;
 }) {
   return (
-    <div className={cn("shimmer-band bg-ink-800", rounded, className)} />
+    <div className={cn("shimmer-band bg-ink-750", rounded, className)} />
   );
 }
 

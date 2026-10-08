@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { PrototypeProvider } from "@/lib/prototype-state";
 import { SWRegister } from "@/components/sw-register";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Show Up — Find your people. Show up. Get better.",
@@ -11,7 +18,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Show Up",
   },
   icons: {
@@ -24,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0b0d",
+  themeColor: "#f2f4f7",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -37,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={inter.variable}>
       <body className="min-h-dvh bg-ink-950 font-sans text-ink-100 antialiased">
         <PrototypeProvider>
           <div className="mx-auto w-full max-w-[440px] px-4 pb-28 pt-[max(1rem,env(safe-area-inset-top))] safe-b sm:px-6">

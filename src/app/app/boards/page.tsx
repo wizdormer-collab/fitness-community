@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, Badge, SectionHeader, Divider } from "@/components/ui/card";
+import { Badge, Band, List, ListRow, SectionHeader } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/header";
 import { Avatar } from "@/components/ui/avatar";
 import { Button, Chip, SegmentedControl } from "@/components/ui/controls";
 import { ProgressBar } from "@/components/ui/metrics";
 import { EmptyState } from "@/components/ui/state";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
 import { cn } from "@/lib/cn";
 import { CHALLENGES, USERS } from "@/lib/mock-data";
 import { grouped } from "@/lib/format";
@@ -17,6 +18,12 @@ type Tab = "challenges" | "board";
 
 const fmt = (c: Challenge, v: number) =>
   c.metric === "distance" ? `${v} km` : c.metric === "streak" ? `${v} d` : `${v}`;
+
+const METRIC_ICON: Record<Challenge["metric"], GlyphName> = {
+  workouts: "gym",
+  distance: "running",
+  streak: "flame",
+};
 
 export default function Boards() {
   const [tab, setTab] = useState<Tab>("challenges");
@@ -49,14 +56,14 @@ export default function Boards() {
 
       {tab === "challenges" ? (
         <>
-          <section className="mb-6">
+          <section className="mb-7">
             <SectionHeader
               label={`Your challenges (${mine.length})`}
               hint="Tap a card for the full standings"
             />
             {mine.length === 0 ? (
               <EmptyState
-                emoji="🏁"
+                icon="flag"
                 title="No active challenges"
                 body="Join one below and your workouts start counting toward a shared goal."
               />
@@ -75,127 +82,122 @@ export default function Boards() {
             )}
           </section>
 
-          <section className="mb-6">
-            <SectionHeader label="Open to join" hint="Community-hosted" />
-            <div className="space-y-3">
-              {openList.length === 0 ? (
-                <EmptyState
-                  emoji="✅"
-                  title="You're in everything"
-                  body="Every open challenge on the platform is already on your board."
-                />
-              ) : (
-                openList.map((c) => (
-                  <Card key={c.id} className="p-4">
-                    <div className="flex items-start gap-3.5">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink-750 text-xl">
-                        {c.emoji}
+          <Band label="Open to join" hint="Community-hosted">
+            {openList.length === 0 ? (
+              <EmptyState
+                icon="check"
+                title="You're in everything"
+                body="Every open challenge on the platform is already on your board."
+              />
+            ) : (
+              <List>
+                {openList.map((c) => (
+                  <ListRow key={c.id} className="py-4">
+                    <span className="flex items-start gap-3.5">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-ink-300">
+                        <Glyph name={METRIC_ICON[c.metric]} size={21} />
                       </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="truncate text-sm font-bold text-ink-50">
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-start justify-between gap-2">
+                          <span className="truncate text-sm font-bold text-ink-50">
                             {c.title}
-                          </p>
+                          </span>
                           <Badge tone="warn">{c.endsIn}</Badge>
-                        </div>
-                        <p className="mt-1 text-xs text-ink-400">
+                        </span>
+                        <span className="mt-1 block text-xs text-ink-400">
                           {c.goal} · hosted by {c.hostName}
-                        </p>
-                        <p className="num mt-1.5 text-[11px] text-ink-500">
+                        </span>
+                        <span className="num mt-1 block text-[11px] text-ink-500">
                           {grouped(c.participants)} participants
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      full
-                      size="sm"
-                      className="mt-3.5"
-                      onClick={() => setJoined((s) => ({ ...s, [c.id]: true }))}
-                    >
-                      Join challenge
-                    </Button>
-                  </Card>
-                ))
-              )}
-            </div>
-          </section>
+                        </span>
+                        <span className="mt-2.5 flex">
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              setJoined((s) => ({ ...s, [c.id]: true }))
+                            }
+                          >
+                            Join challenge
+                          </Button>
+                        </span>
+                      </span>
+                    </span>
+                  </ListRow>
+                ))}
+              </List>
+            )}
+          </Band>
         </>
       ) : (
         <>
-          <section className="mb-6">
+          <section className="mb-7">
             <SectionHeader
               label="Weekly leaderboard"
               hint="Points from check-ins, sessions and PRs"
               action={{ label: "Rules", href: "/app/progress" }}
             />
-            <Card className="divide-y divide-ink-700 p-0">
+            <List>
               {USERS.slice(0, 8).map((u, i) => {
                 const score = 420 - i * 37;
                 return (
-                  <div
-                    key={u.id}
-                    className={cn(
-                      "flex items-center gap-3.5 px-4 py-3",
-                      u.id === "david" && "bg-volt-400/[0.06]",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "num w-6 text-center text-sm font-display font-bold",
-                        i === 0
-                          ? "text-volt-400"
-                          : i < 3
-                            ? "text-ink-200"
-                            : "text-ink-500",
-                      )}
-                    >
-                      {i + 1}
-                    </span>
-                    <Avatar initials={u.initials} tone={u.tone} size="md" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-ink-100">
-                        {u.name}
-                        {u.id === "david" && (
-                          <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-volt-400">
-                            You
-                          </span>
+                  <ListRow key={u.id} className={cn(u.id === "david" && "bg-volt-400/[0.06]")}>
+                    <span className="flex items-center gap-3.5">
+                      <span
+                        className={cn(
+                          "num w-6 text-center text-sm font-display font-bold",
+                          i === 0
+                            ? "text-volt-700"
+                            : i < 3
+                              ? "text-ink-200"
+                              : "text-ink-500",
                         )}
-                      </p>
-                      <p className="truncate text-[11px] text-ink-500">
-                        {u.area.replace("-", " ")} · {u.fitnessLevel}
-                      </p>
-                    </div>
-                    <span className="num shrink-0 text-sm font-display font-bold text-ink-200">
-                      {score}
+                      >
+                        {i + 1}
+                      </span>
+                      <Avatar initials={u.initials} tone={u.tone} size="md" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-ink-100">
+                          {u.name}
+                          {u.id === "david" && (
+                            <span className="ml-1.5 text-[11px] font-bold uppercase tracking-wider text-volt-700">
+                              You
+                            </span>
+                          )}
+                        </span>
+                        <span className="block truncate text-[11px] text-ink-500">
+                          {u.area.replace("-", " ")} · {u.fitnessLevel}
+                        </span>
+                      </span>
+                      <span className="num shrink-0 text-sm font-display font-bold text-ink-200">
+                        {score}
+                      </span>
                     </span>
-                  </div>
+                  </ListRow>
                 );
               })}
-            </Card>
+            </List>
             <p className="mt-2.5 text-xs leading-relaxed text-ink-500">
               Your community gets to see when you skip — that is the point.
               Scores reset every Monday 00:00 WAT.
             </p>
           </section>
 
-          <section className="mb-6">
-            <SectionHeader label="Challenge standings" />
+          <Band label="Challenge standings">
             <div className="space-y-3">
               {mine.map((c) => (
-                <Card key={c.id} className="p-4">
+                <div key={c.id} className="py-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl" aria-hidden>
-                      {c.emoji}
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-volt-400/20 text-volt-700">
+                      <Glyph name={METRIC_ICON[c.metric]} size={21} />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-ink-50">
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-bold text-ink-50">
                         {c.title}
-                      </p>
-                      <p className="num text-[11px] text-ink-500">
-                        You&apos;re #{grouped(c.you.rank)} of{" "}
-                        {grouped(c.participants)}
-                      </p>
-                    </div>
+                      </span>
+                      <span className="num block text-[11px] text-ink-500">
+                        You&apos;re #{grouped(c.you.rank)} of {grouped(c.participants)}
+                      </span>
+                    </span>
                     <Badge tone={c.you.pct >= 70 ? "ok" : "volt"}>
                       {c.you.pct}%
                     </Badge>
@@ -206,45 +208,46 @@ export default function Boards() {
                     max={c.target}
                     showLabel
                   />
-                  <Divider className="my-3.5" />
-                  <div className="space-y-2.5">
+                  <List className="mt-3.5">
                     {c.leaderboard.map((row) => (
-                      <div
-                        key={`${c.id}-${row.rank}`}
+                      <ListRow
+                        key={`${c.id}-lb-${row.rank}`}
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-2 py-1.5",
-                          row.you && "bg-volt-400/[0.08] ring-1 ring-volt-400/25",
+                          "px-2",
+                          row.you && "bg-volt-400/[0.08] ring-1 ring-inset ring-volt-400/30",
                         )}
                       >
-                        <span className="num w-7 text-center text-xs font-bold text-ink-500">
-                          {grouped(row.rank)}
+                        <span className="flex items-center gap-3">
+                          <span className="num w-7 text-center text-xs font-bold text-ink-500">
+                            {grouped(row.rank)}
+                          </span>
+                          <Avatar
+                            initials={row.name
+                              .split(" ")
+                              .map((p) => p[0])
+                              .join("")
+                              .slice(0, 2)}
+                            tone={row.tone}
+                            size="sm"
+                          />
+                          <span className="min-w-0 flex-1 truncate text-sm text-ink-200">
+                            {row.name}
+                          </span>
+                          <span className="num text-xs font-bold text-ink-300">
+                            {fmt(c, row.value)}
+                          </span>
                         </span>
-                        <Avatar
-                          initials={row.name
-                            .split(" ")
-                            .map((p) => p[0])
-                            .join("")
-                            .slice(0, 2)}
-                          tone={row.tone}
-                          size="sm"
-                        />
-                        <span className="min-w-0 flex-1 truncate text-sm text-ink-200">
-                          {row.name}
-                        </span>
-                        <span className="num text-xs font-bold text-ink-300">
-                          {fmt(c, row.value)}
-                        </span>
-                      </div>
+                      </ListRow>
                     ))}
-                  </div>
-                </Card>
+                  </List>
+                </div>
               ))}
             </div>
-          </section>
+          </Band>
         </>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         <Chip size="sm" href="/app/progress">
           Your progress
         </Chip>
@@ -268,15 +271,15 @@ function ChallengeCard({
   onLeave: () => void;
 }) {
   return (
-    <Card className="overflow-hidden">
+    <div className="card-shine overflow-hidden rounded-2xl border border-ink-700 bg-ink-800">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full items-start gap-3.5 p-4 text-left"
         aria-expanded={open}
       >
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink-750 text-xl">
-          {c.emoji}
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink-750 text-ink-300">
+          <Glyph name={METRIC_ICON[c.metric]} size={23} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
@@ -306,57 +309,59 @@ function ChallengeCard({
 
       {open && (
         <div className="border-t border-ink-700 bg-ink-850/60 p-4 animate-fade-up">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-ink-500">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-ink-500">
             Standings
           </p>
-          <div className="space-y-2.5">
+          <List>
             {c.leaderboard.map((row) => (
-              <div
+              <ListRow
                 key={`${c.id}-lb-${row.rank}`}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-2 py-1.5",
-                  row.you && "bg-volt-400/[0.08] ring-1 ring-volt-400/25",
+                  "px-2",
+                  row.you && "bg-volt-400/[0.08] ring-1 ring-inset ring-volt-400/30",
                 )}
               >
-                <span
-                  className={cn(
-                    "num w-7 text-center text-xs font-bold",
-                    row.rank <= 3 ? "text-volt-400" : "text-ink-500",
-                  )}
-                >
-                  {grouped(row.rank)}
+                <span className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "num w-7 text-center text-xs font-bold",
+                      row.rank <= 3 ? "text-volt-700" : "text-ink-500",
+                    )}
+                  >
+                    {grouped(row.rank)}
+                  </span>
+                  <Avatar
+                    initials={row.name
+                      .split(" ")
+                      .map((p) => p[0])
+                      .join("")
+                      .slice(0, 2)}
+                    tone={row.tone}
+                    size="sm"
+                  />
+                  <span className="min-w-0 flex-1 truncate text-sm text-ink-200">
+                    {row.name}
+                  </span>
+                  <span className="num text-xs font-bold text-ink-300">
+                    {fmt(c, row.value)}
+                  </span>
                 </span>
-                <Avatar
-                  initials={row.name
-                    .split(" ")
-                    .map((p) => p[0])
-                    .join("")
-                    .slice(0, 2)}
-                  tone={row.tone}
-                  size="sm"
-                />
-                <span className="min-w-0 flex-1 truncate text-sm text-ink-200">
-                  {row.name}
-                </span>
-                <span className="num text-xs font-bold text-ink-300">
-                  {fmt(c, row.value)}
-                </span>
-              </div>
+              </ListRow>
             ))}
-          </div>
-          <div className="mt-4 flex gap-2">
+          </List>
+          <div className="mt-4 flex items-center gap-3">
             <Button size="sm" variant="secondary" onClick={onLeave}>
               Leave challenge
             </Button>
             <Link
               href="/app/progress"
-              className="inline-flex items-center px-3 text-xs font-semibold text-volt-400"
+              className="text-xs font-semibold text-volt-700"
             >
               See your log →
             </Link>
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 }

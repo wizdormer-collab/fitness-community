@@ -12,6 +12,7 @@ import { COMMUNITIES, POSTS } from "@/lib/mock-data";
 import { userById } from "@/lib/selectors";
 import { usePrototype } from "@/lib/prototype-state";
 import { areaLabel, activityOf } from "@/lib/format";
+import { Glyph } from "@/components/ui/glyph";
 
 type Scope = "feed" | "mine";
 
@@ -42,8 +43,8 @@ export default function CommunityFeed() {
         subtitle="Fitness-first posts from people near you — not a generic social feed."
         right={
           <Link href="/app/discover" aria-label="Find communities">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink-800 text-lg ring-1 ring-ink-700">
-              🔎
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink-800 text-ink-400 ring-1 ring-ink-700">
+              <Glyph name="search" size={20} />
             </span>
           </Link>
         }
@@ -64,7 +65,7 @@ export default function CommunityFeed() {
             className={cn(
               "flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition",
               scope === s.id
-                ? "bg-volt-400 text-ink-950"
+                ? "bg-volt-400 text-onvolt"
                 : "text-ink-300 hover:text-ink-100",
             )}
           >
@@ -86,16 +87,23 @@ export default function CommunityFeed() {
               setScope("feed");
             }}
             className={cn(
-              "flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition",
+              "flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-2xl px-2 py-2.5 transition",
               !activeId && scope === "feed"
-                ? "border-volt-400 bg-volt-400/[0.08]"
-                : "border-ink-700 bg-ink-800",
+                ? "bg-volt-400/[0.16]"
+                : "hover:bg-ink-750",
             )}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink-750 text-xl">
-              ✨
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-ink-300 ring-1 ring-ink-700">
+              <Glyph name="all" size={20} />
             </span>
-            <span className="text-[10px] font-bold text-ink-300">All</span>
+            <span
+              className={cn(
+                "text-[11px] font-bold",
+                !activeId && scope === "feed" ? "text-volt-800" : "text-ink-400",
+              )}
+            >
+              All
+            </span>
           </button>
 
           {rail.map((c) => (
@@ -107,19 +115,24 @@ export default function CommunityFeed() {
                 setScope("feed");
               }}
               className={cn(
-                "flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition",
+                "flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-2xl px-2 py-2.5 transition",
                 activeId === c.id
-                  ? "border-volt-400 bg-volt-400/[0.08]"
-                  : "border-ink-700 bg-ink-800",
+                  ? "bg-volt-400/[0.16]"
+                  : "hover:bg-ink-750",
               )}
             >
-              <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-ink-750 text-xl">
-                {c.emoji}
+              <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-ink-300 ring-1 ring-ink-700">
+                <Glyph name={c.activity} size={20} />
                 {isCommunityJoined(c.id) && (
-                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ink-800 bg-volt-400" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-volt-400" />
                 )}
               </span>
-              <span className="w-full truncate text-center text-[10px] font-bold text-ink-300">
+              <span
+                className={cn(
+                  "w-full truncate text-center text-[11px] font-bold",
+                  activeId === c.id ? "text-volt-800" : "text-ink-400",
+                )}
+              >
                 {c.name.split(" ")[0]}
               </span>
             </button>
@@ -145,8 +158,8 @@ export default function CommunityFeed() {
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-dashed border-ink-700 bg-ink-850/60 p-4">
-        <p className="text-[13px] leading-relaxed text-ink-400">
+      <div className="mt-7 border-l-2 border-volt-600 pl-4">
+        <p className="text-[13px] leading-relaxed text-ink-500">
           Every post here is tied to a workout, a record or a community event.
           The PRD is explicit that this must stay fitness-focused rather than
           becoming a generic social platform.
@@ -171,14 +184,14 @@ function PinnedCommunity({ id }: { id: string }) {
   return (
     <Card className="p-4">
       <div className="flex items-start gap-3.5">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink-750 text-3xl">
-          {c.emoji}
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink-750 text-ink-300">
+          <Glyph name={c.activity} size={26} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <Link
               href={`/app/community/${c.id}`}
-              className="font-display text-[15px] font-bold leading-tight text-ink-50 hover:text-volt-400"
+              className="font-display text-[15px] font-bold leading-tight text-ink-50 hover:text-volt-700"
             >
               {c.name}
             </Link>

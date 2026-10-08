@@ -19,10 +19,6 @@ export function activityLabel(id: ActivityId): string {
   return activityOf(id).label;
 }
 
-export function activityEmoji(id: ActivityId): string {
-  return activityOf(id).emoji;
-}
-
 // ---------- Numbers ----------
 
 export function compact(n: number): string {

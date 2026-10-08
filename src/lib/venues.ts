@@ -3,35 +3,35 @@ import type { CheckIn } from "@/lib/types";
 // PRD §13 — check-in targets. `code` is what the QR encodes.
 export const CHECKIN_VENUES: {
   name: string;
-  emoji: string;
+  icon: string;
   code: string;
   method: string;
   recent: boolean;
 }[] = [
   {
     name: "i-Fitness Lekki",
-    emoji: "🏋️",
+    icon: "gym",
     code: "LEK-4471",
     method: "QR at reception",
     recent: true,
   },
   {
     name: "Lekki Phase 1",
-    emoji: "🏃",
+    icon: "running",
     code: "RUN-8820",
     method: "Organiser QR",
     recent: true,
   },
   {
     name: "Eko Atlantic Lawn",
-    emoji: "🧘",
+    icon: "yoga",
     code: "VI-1093",
     method: "Manual code",
     recent: false,
   },
   {
     name: "Rocks Gym, Opebi",
-    emoji: "🏋️",
+    icon: "gym",
     code: "IKJ-7712",
     method: "QR at turnstile",
     recent: false,

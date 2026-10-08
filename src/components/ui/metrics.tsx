@@ -1,41 +1,47 @@
 import { cn } from "@/lib/cn";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
 
 export function StatTile({
   label,
   value,
   unit,
   sub,
-  emoji,
+  icon,
   accent = false,
+  framed = false,
   className,
 }: {
   label: string;
   value: string | number;
   unit?: string;
   sub?: string;
-  emoji?: string;
+  icon?: GlyphName;
   accent?: boolean;
+  /** Opt back into a framed box only where a tile needs to hold its own ground. */
+  framed?: boolean;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "card-shine flex flex-col gap-1 rounded-2xl border p-4",
-        accent
-          ? "border-volt-400/30 bg-volt-400/[0.07]"
-          : "border-ink-700 bg-ink-800",
+        "flex flex-col gap-1",
+        framed ? "card-shine rounded-2xl border p-4" : "px-1",
+        framed &&
+          (accent
+            ? "border-volt-600/40 bg-volt-400/10"
+            : "border-ink-700 bg-ink-800"),
         className,
       )}
     >
-      <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-        {emoji && <span aria-hidden>{emoji}</span>}
+      <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+        {icon && <Glyph name={icon} size={13} strokeWidth={2} />}
         {label}
       </span>
       <span className="flex items-baseline gap-1">
         <span
           className={cn(
-            "num font-display text-2xl font-bold leading-none tracking-tight",
-            accent ? "text-volt-400" : "text-ink-50",
+            "num font-display text-[28px] font-bold leading-none tracking-tight",
+            accent ? "text-volt-700" : "text-ink-50",
           )}
         >
           {value}
@@ -44,7 +50,7 @@ export function StatTile({
           <span className="text-xs font-semibold text-ink-400">{unit}</span>
         )}
       </span>
-      {sub && <span className="text-[11px] text-ink-400">{sub}</span>}
+      {sub && <span className="text-[13px] text-ink-400">{sub}</span>}
     </div>
   );
 }
@@ -66,7 +72,7 @@ export function ProgressBar({
 }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   const bars = {
-    volt: "bg-volt-400",
+    volt: "bg-volt-600",
     ok: "bg-ok-500",
     warn: "bg-warn-500",
     info: "bg-info-500",
@@ -93,7 +99,7 @@ export function ProgressBar({
           <span className="num text-ink-300">
             {value} / {max}
           </span>
-          <span className="num font-semibold text-volt-400">{pct}%</span>
+          <span className="num font-semibold text-volt-700">{pct}%</span>
         </div>
       )}
     </div>
@@ -163,7 +169,7 @@ export function StreakFlame({
       <span className="relative flex h-4 w-4 items-center justify-center">
         <span className="absolute inset-0 rounded-full bg-warn-500/50 animate-pulse-ring" />
         <span className="relative" aria-hidden>
-          🔥
+          <Glyph name="flame" size={14} strokeWidth={2} />
         </span>
       </span>
       <span className="num text-sm">{days}-day streak</span>
@@ -178,7 +184,7 @@ export function Ring({
   size = 72,
   stroke = 7,
   label,
-  accent = "#d7ff3e",
+  accent = "#7a9e1b",
 }: {
   value: number;
   max: number;
@@ -201,7 +207,7 @@ export function Ring({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#22262d"
+          stroke="#e1e5eb"
           strokeWidth={stroke}
         />
         <circle
@@ -222,7 +228,7 @@ export function Ring({
           {value}/{max}
         </span>
         {label && (
-          <span className="mt-0.5 text-[9px] uppercase tracking-wider text-ink-400">
+          <span className="mt-1 text-[11px] font-semibold uppercase tracking-normal text-ink-400">
             {label}
           </span>
         )}

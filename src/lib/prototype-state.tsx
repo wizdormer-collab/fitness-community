@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import { CURRENT_USER_ID, ME, NOTIFICATIONS, PROGRESS } from "@/lib/mock-data";
 import type {
   ActivityId,
@@ -31,6 +23,13 @@ import type {
 // spot meter, checking in moves the streak, logging a workout moves the
 // dashboard and progress page. Persisted to localStorage so a refresh
 // mid-flow doesn't reset the narrative.
+//
+// The store lives outside React and is subscribed to with
+// useSyncExternalStore. That is deliberate: getServerSnapshot returns
+// INITIAL, so prerendered HTML ships real content, hydration matches it
+// exactly, and React then swaps in the persisted state. A plain
+// useState + useEffect loader would either mismatch hydration or force
+// every page behind a boot splash.
 // ============================================================
 
 const STORAGE_KEY = "fitproto.v1";
@@ -78,8 +77,171 @@ const INITIAL: PersistedState = {
   trainingMinutes: PROGRESS.trainingHours * 60,
 };
 
+const DEFAULT_PROFILE: DraftProfile = {
+  name: ME.name,
+  area: ME.area,
+  goals: [...ME.goals],
+  activities: [...ME.activities],
+  fitnessLevel: ME.fitnessLevel,
+  preferredDays: [...ME.preferredDays],
+  preferredSlots: [...ME.preferredSlots],
+  currentGym: ME.currentGym ?? "",
+};
+
+// ------------------------------------------------------------
+// Store
+// ------------------------------------------------------------
+
+function readPersisted(): PersistedState {
+  if (typeof window === "undefined") return INITIAL;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      return { ...INITIAL, ...(JSON.parse(raw) as Partial<PersistedState>) };
+    }
+  } catch {
+    // Corrupt storage should never block the prototype.
+  }
+  return INITIAL;
+}
+
+let current: PersistedState = readPersisted();
+const listeners = new Set<() => void>();
+
+function notify() {
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot(): PersistedState {
+  return current;
+}
+
+/** Server always renders the seeded Lagos state; storage never leaks into HTML. */
+function getServerSnapshot(): PersistedState {
+  return INITIAL;
+}
+
+function persist() {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+  } catch {
+    // Storage full or blocked — prototype still works in-memory.
+  }
+}
+
+function commit(updater: (state: PersistedState) => PersistedState) {
+  const next = updater(current);
+  if (next === current) return;
+  current = next;
+  persist();
+  notify();
+}
+
+// Keep every open tab in sync while someone is showing the demo around.
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    current = readPersisted();
+    notify();
+  });
+}
+
+// ------------------------------------------------------------
+// Actions — module level so they never invalidate the memoised context
+// ------------------------------------------------------------
+
+function setDraft(patch: Partial<DraftProfile>) {
+  commit((s) => ({ ...s, draft: { ...s.draft, ...patch } }));
+}
+
+function completeOnboarding() {
+  commit((s) => ({ ...s, onboarded: true }));
+}
+
+function reset() {
+  current = { ...INITIAL, readNotifications: [...INITIAL.readNotifications] };
+  persist();
+  notify();
+}
+
+function toggleCommunity(id: string): boolean {
+  const joined = current.joinedCommunities.includes(id);
+  commit((s) => ({
+    ...s,
+    joinedCommunities: joined
+      ? s.joinedCommunities.filter((c) => c !== id)
+      : [...s.joinedCommunities, id],
+  }));
+  return !joined;
+}
+
+function toggleSession(id: string): boolean {
+  const joined = current.joinedSessions.includes(id);
+  commit((s) => ({
+    ...s,
+    joinedSessions: joined
+      ? s.joinedSessions.filter((x) => x !== id)
+      : [...s.joinedSessions, id],
+  }));
+  return !joined;
+}
+
+function checkIn(id: string) {
+  commit((s) =>
+    s.checkedIn.includes(id)
+      ? s
+      : { ...s, checkedIn: [...s.checkedIn, id], streak: s.streak + 1 },
+  );
+}
+
+function toggleLike(id: string) {
+  commit((s) => ({
+    ...s,
+    likedPosts: s.likedPosts.includes(id)
+      ? s.likedPosts.filter((p) => p !== id)
+      : [...s.likedPosts, id],
+  }));
+}
+
+function markAllNotificationsRead() {
+  const all = NOTIFICATIONS.map((n) => n.id);
+  commit((s) =>
+    all.every((id) => s.readNotifications.includes(id))
+      ? s
+      : { ...s, readNotifications: all },
+  );
+}
+
+function addWorkout(w: Omit<Workout, "id" | "userId">) {
+  commit((s) => {
+    const workout: Workout = {
+      ...w,
+      id: `w-live-${Date.now()}`,
+      userId: CURRENT_USER_ID,
+    };
+    return {
+      ...s,
+      extraWorkouts: [workout, ...s.extraWorkouts],
+      weeklyCompleted: Math.min(PROGRESS.weeklyTarget, s.weeklyCompleted + 1),
+      totalWorkouts: s.totalWorkouts + 1,
+      trainingMinutes: s.trainingMinutes + w.durationMin,
+      personalRecords: w.isPR ? s.personalRecords + 1 : s.personalRecords,
+    };
+  });
+}
+
+// ------------------------------------------------------------
+// Context
+// ------------------------------------------------------------
+
 interface PrototypeStore {
-  hydrated: boolean;
   state: PersistedState;
   profile: DraftProfile;
   setDraft: (patch: Partial<DraftProfile>) => void;
@@ -100,153 +262,13 @@ interface PrototypeStore {
 
 const StoreContext = createContext<PrototypeStore | null>(null);
 
-const DEFAULT_PROFILE: DraftProfile = {
-  name: ME.name,
-  area: ME.area,
-  goals: [...ME.goals],
-  activities: [...ME.activities],
-  fitnessLevel: ME.fitnessLevel,
-  preferredDays: [...ME.preferredDays],
-  preferredSlots: [...ME.preferredSlots],
-  currentGym: ME.currentGym ?? "",
-};
-
-const noopSubscribe = () => () => {};
-
-/**
- * Read persisted state outside of React so hydration stays deterministic:
- * the server and the client's first paint both see INITIAL, and storage is
- * only consulted once React has taken over.
- */
-function readPersisted(): PersistedState {
-  if (typeof window === "undefined") return INITIAL;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      return { ...INITIAL, ...(JSON.parse(raw) as Partial<PersistedState>) };
-    }
-  } catch {
-    // Corrupt storage should never block the prototype.
-  }
-  return INITIAL;
-}
-
 export function PrototypeProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<PersistedState>(readPersisted);
-  const hydrated = useSyncExternalStore(
-    noopSubscribe,
-    () => true,
-    () => false,
-  );
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // Storage full or blocked — prototype still works in-memory.
-    }
-  }, [state, hydrated]);
-
-  const setDraft = useCallback((patch: Partial<DraftProfile>) => {
-    setState((s) => ({ ...s, draft: { ...s.draft, ...patch } }));
-  }, []);
-
-  const completeOnboarding = useCallback(() => {
-    setState((s) => ({ ...s, onboarded: true }));
-  }, []);
-
-  const reset = useCallback(() => {
-    setState({ ...INITIAL, readNotifications: [...INITIAL.readNotifications] });
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const toggleCommunity = useCallback((id: string) => {
-    let next = false;
-    setState((s) => {
-      const joined = s.joinedCommunities.includes(id);
-      next = !joined;
-      return {
-        ...s,
-        joinedCommunities: joined
-          ? s.joinedCommunities.filter((c) => c !== id)
-          : [...s.joinedCommunities, id],
-      };
-    });
-    return next;
-  }, []);
-
-  const toggleSession = useCallback((id: string) => {
-    let next = false;
-    setState((s) => {
-      const joined = s.joinedSessions.includes(id);
-      next = !joined;
-      return {
-        ...s,
-        joinedSessions: joined
-          ? s.joinedSessions.filter((x) => x !== id)
-          : [...s.joinedSessions, id],
-      };
-    });
-    return next;
-  }, []);
-
-  const checkIn = useCallback((id: string) => {
-    setState((s) =>
-      s.checkedIn.includes(id)
-        ? s
-        : {
-            ...s,
-            checkedIn: [...s.checkedIn, id],
-            streak: s.streak + 1,
-          },
-    );
-  }, []);
-
-  const toggleLike = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      likedPosts: s.likedPosts.includes(id)
-        ? s.likedPosts.filter((p) => p !== id)
-        : [...s.likedPosts, id],
-    }));
-  }, []);
-
-  const markAllNotificationsRead = useCallback(() => {
-    const all = NOTIFICATIONS.map((n) => n.id);
-    setState((s) =>
-      all.every((id) => s.readNotifications.includes(id))
-        ? s
-        : { ...s, readNotifications: all },
-    );
-  }, []);
-
-  const addWorkout = useCallback((w: Omit<Workout, "id" | "userId">) => {
-    setState((s) => {
-      const id = `w-live-${Date.now()}`;
-      const workout: Workout = { ...w, id, userId: CURRENT_USER_ID };
-      const completed = Math.min(PROGRESS.weeklyTarget, s.weeklyCompleted + 1);
-      return {
-        ...s,
-        extraWorkouts: [workout, ...s.extraWorkouts],
-        weeklyCompleted: completed,
-        totalWorkouts: s.totalWorkouts + 1,
-        trainingMinutes: s.trainingMinutes + w.durationMin,
-        personalRecords: w.isPR ? s.personalRecords + 1 : s.personalRecords,
-      };
-    });
-  }, []);
-
-  const value = useMemo<PrototypeStore>(() => {
-    const profile: DraftProfile = { ...DEFAULT_PROFILE, ...state.draft };
-    return {
-      hydrated,
+  const value = useMemo<PrototypeStore>(
+    () => ({
       state,
-      profile,
+      profile: { ...DEFAULT_PROFILE, ...state.draft },
       setDraft,
       completeOnboarding,
       reset,
@@ -263,45 +285,11 @@ export function PrototypeProvider({ children }: { children: React.ReactNode }) {
         INITIAL.readNotifications.includes(id),
       markAllNotificationsRead,
       addWorkout,
-    };
-  }, [
-    hydrated,
-    state,
-    setDraft,
-    completeOnboarding,
-    reset,
-    toggleCommunity,
-    toggleSession,
-    checkIn,
-    toggleLike,
-    markAllNotificationsRead,
-    addWorkout,
-  ]);
-
-  return (
-    <StoreContext.Provider value={value}>
-      {hydrated ? children : <PrototypeBoot />}
-    </StoreContext.Provider>
+    }),
+    [state],
   );
-}
 
-/** One-frame boot screen — keeps SSR and the client's first paint identical. */
-function PrototypeBoot() {
-  return (
-    <div
-      className="flex min-h-[70vh] flex-col items-center justify-center gap-4"
-      role="status"
-      aria-label="Loading prototype"
-    >
-      <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-volt-400 font-display text-3xl font-black text-ink-950 volt-glow">
-        S
-      </span>
-      <span className="font-display text-sm font-bold uppercase tracking-[0.3em] text-ink-500">
-        Show Up
-      </span>
-      <span className="shimmer-band h-1.5 w-28 rounded-full bg-ink-800" />
-    </div>
-  );
+  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 
 export function usePrototype(): PrototypeStore {

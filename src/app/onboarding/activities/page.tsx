@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { FieldLabel, OnboardingShell } from "@/components/onboarding-shell";
-import { cn } from "@/lib/cn";
+import { Chip } from "@/components/ui/controls";
 import { usePrototype } from "@/lib/prototype-state";
 import { ACTIVITIES, type ActivityId } from "@/lib/types";
+import { Glyph } from "@/components/ui/glyph";
 
 export default function Activities() {
   const { profile, setDraft } = usePrototype();
@@ -40,36 +41,26 @@ export default function Activities() {
         Select your activities
       </FieldLabel>
 
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="flex flex-wrap gap-2">
         {ACTIVITIES.map((a) => {
           const active = selected.includes(a.id);
           return (
-            <button
+            <Chip
               key={a.id}
-              type="button"
+              size="md"
+              selected={active}
               onClick={() => toggle(a.id)}
-              aria-pressed={active}
-              className={cn(
-                "flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3.5 transition active:scale-[0.97]",
-                active
-                  ? "border-volt-400 bg-volt-400 text-ink-950"
-                  : "border-ink-700 bg-ink-800 text-ink-300 hover:border-ink-600",
-              )}
             >
-              <span className="text-xl" aria-hidden>
-                {a.emoji}
-              </span>
-              <span className="text-[11px] font-bold leading-tight text-center">
-                {a.label}
-              </span>
-            </button>
+              <Glyph name={a.id} size={16} strokeWidth={2} />
+              {a.label}
+            </Chip>
           );
         })}
       </div>
 
-      <div className="mt-7 rounded-2xl border border-ink-700 bg-ink-850 p-4">
-        <p className="text-[13px] leading-relaxed text-ink-400">
-          Don&apos;t see yours? <span className="text-ink-200">Other</span>{" "}
+      <div className="mt-7 border-l-2 border-volt-600 pl-4">
+        <p className="text-[13px] leading-relaxed text-ink-500">
+          Don&apos;t see yours? <span className="font-semibold text-ink-100">Other</span>{" "}
           covers padel-adjacent sports, CrossFit, martial arts and everything
           we haven&apos;t listed yet. Communities can be built around it from
           day one.

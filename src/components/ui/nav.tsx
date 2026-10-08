@@ -55,7 +55,7 @@ const TABS: {
 export function AppNav({ logHref = "/app/log" }: { logHref?: string }) {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-700 bg-ink-900/95 backdrop-blur-xl">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-700 bg-white/95 backdrop-blur-xl shadow-[0_-4px_20px_-12px_rgba(11,13,15,0.3)]">
       <div className="mx-auto flex max-w-md items-stretch px-2 pb-[env(safe-area-inset-bottom)]">
         {TABS.map((tab) => {
           const active = tab.exact
@@ -67,11 +67,16 @@ export function AppNav({ logHref = "/app/log" }: { logHref?: string }) {
               href={tab.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex flex-1 flex-col items-center gap-1 py-2.5 transition",
-                active ? "text-volt-400" : "text-ink-400 hover:text-ink-200",
+                "relative flex flex-1 flex-col items-center gap-1.5 py-2.5 transition",
+                active ? "text-ink-50" : "text-ink-500 hover:text-ink-300",
               )}
             >
-              <span className="relative flex h-6 w-6 items-center justify-center">
+              <span
+                className={cn(
+                  "flex h-7 w-9 items-center justify-center rounded-full transition-colors",
+                  active && "bg-volt-400",
+                )}
+              >
                 <svg
                   width="21"
                   height="21"
@@ -83,13 +88,10 @@ export function AppNav({ logHref = "/app/log" }: { logHref?: string }) {
                 >
                   {ICONS[tab.key]}
                 </svg>
-                {active && (
-                  <span className="absolute -bottom-2 h-1 w-1 rounded-full bg-volt-400" />
-                )}
               </span>
               <span
                 className={cn(
-                  "text-[10px] font-semibold tracking-wide",
+                  "text-[11px] font-semibold tracking-wide",
                   active && "font-bold",
                 )}
               >
@@ -104,7 +106,7 @@ export function AppNav({ logHref = "/app/log" }: { logHref?: string }) {
       <Link
         href={logHref}
         aria-label="Log a workout"
-        className="absolute -top-7 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full border-4 border-ink-950 bg-volt-400 text-ink-950 shadow-[0_10px_30px_-8px_rgba(215,255,62,0.55)] transition active:scale-95 hover:bg-volt-300"
+        className="absolute -top-7 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-volt-400 text-onvolt ring-4 ring-white shadow-[0_10px_24px_-8px_rgba(11,13,15,0.4)] transition active:scale-95 hover:bg-volt-500"
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path

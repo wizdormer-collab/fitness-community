@@ -1,52 +1,70 @@
 @import "tailwindcss";
 
 @theme {
-  /* ---- Ink (neutral) scale — near-black athletic base ---- */
-  --color-ink-950: #0a0b0d;
-  --color-ink-900: #101215;
-  --color-ink-850: #14171b;
-  --color-ink-800: #171a1f;
-  --color-ink-750: #1c2026;
-  --color-ink-700: #22262d;
-  --color-ink-600: #2e333c;
-  --color-ink-500: #3d444f;
-  --color-ink-400: #5a6270;
-  --color-ink-300: #838b99;
-  --color-ink-200: #b4bbc7;
-  --color-ink-100: #e4e8ee;
-  --color-ink-50: #f7f9fb;
+  /* ---- Ink (neutral) scale — LIGHT canvas ----
+     Reading direction: 50 = darkest (primary text) → 950 = lightest (canvas).
+     50–600 are text/stroke weights, 700 is the hairline, 750–950 are surfaces.
+     Names are unchanged from the original dark build on purpose: inverting the
+     values repoints ~650 class references at once instead of renaming them. */
+  --color-ink-50: #0b0d0f;
+  --color-ink-100: #171b20;
+  --color-ink-200: #2f353d;
+  --color-ink-300: #4c5460;
+  --color-ink-400: #626a77;
+  --color-ink-500: #7b8391;
+  --color-ink-600: #949ca8;
+  --color-ink-700: #e1e5eb;
+  --color-ink-750: #e7ebf0;
+  --color-ink-800: #ffffff;
+  --color-ink-850: #eef1f5;
+  --color-ink-900: #ffffff;
+  --color-ink-950: #f2f4f7;
 
-  /* ---- Volt (accent) — neon lime ---- */
-  --color-volt-100: #f7ffdc;
-  --color-volt-200: #f0ffb8;
-  --color-volt-300: #e4ff77;
+  /* ---- Volt (accent) — lime
+     Split by role, not by hue:
+       400 = the FILL (buttons, dots, chips, selected states)
+       700 = the TEXT accent on light surfaces (#d7ff3e text on white is 1.2:1) */
+  --color-volt-100: #fbffeb;
+  --color-volt-200: #f3ffcf;
+  --color-volt-300: #e6ff9b;
   --color-volt-400: #d7ff3e;
-  --color-volt-500: #b6f024;
-  --color-volt-600: #a3d90a;
-  --color-volt-700: #7a9e1b;
-  --color-volt-800: #4f660f;
+  --color-volt-500: #c2ef1a;
+  /* 600 is the step where lime becomes readable as a graphic on white (3.1:1) */
+  --color-volt-600: #7a9e1b;
+  --color-volt-700: #5f7a00;
+  --color-volt-800: #475c00;
 
-  /* ---- Semantic ---- */
-  --color-ok-400: #5ee89a;
-  --color-ok-500: #3ddc84;
-  --color-ok-600: #21b566;
-  --color-warn-400: #ffc34d;
+  /* ---- On-accent + scrim ----
+     Two roles that must not ride the ink scale: text sitting on a lime fill,
+     and dark overlays (sheet backdrop, check-in toast) that stay dark even
+     though ink-950 is now the light canvas. */
+  --color-onvolt: #0b0d0f;
+  --color-scrim: #0b0d0f;
+
+  /* ---- Semantic ----
+     -400 stops are consumed as TEXT (darkened for AA on white).
+     -500 stops are consumed as FILLS (kept vivid). */
+  --color-ok-400: #0e7a45;
+  --color-ok-500: #2dd881;
+  --color-ok-600: #12914f;
+  --color-warn-400: #8a5a00;
   --color-warn-500: #ffb020;
-  --color-warn-600: #d98a06;
-  --color-bad-400: #ff7070;
-  --color-bad-500: #ff4d4d;
+  --color-warn-600: #b97300;
+  --color-bad-400: #c62828;
+  --color-bad-500: #ff5252;
   --color-bad-600: #d92f2f;
-  --color-info-400: #7ea5ff;
+  --color-info-400: #1f5fd0;
   --color-info-500: #5b8cff;
   --color-info-600: #3b6be0;
 
   /* ---- Type ----
-     System stack only: next/font/google would stall the build on a
-     throttled connection. Display reads athletic via weight + tracking. */
-  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
+     --font-inter is injected by next/font in app/layout.tsx. The system stack
+     stays underneath as the fallback so a font fetch that stalls still renders
+     a correct, readable page. */
+  --font-display: var(--font-inter, system-ui), system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: var(--font-inter, system-ui), system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   /* ---- Motion ---- */
   --animate-fade-up: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -152,7 +170,7 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -172,7 +190,7 @@ body {
 
 ::selection {
   background: var(--color-volt-400);
-  color: var(--color-ink-950);
+  color: var(--color-onvolt);
 }
 
 button,
@@ -184,7 +202,7 @@ select {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-volt-400);
+  outline: 2px solid var(--color-volt-700);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -228,26 +246,26 @@ select {
   }
 }
 
+/* Light-theme equivalent of the old dark sheen: no colour wash (it would
+   cover tinted card variants), just a lift off the canvas. */
 @utility card-shine {
-  background-image: linear-gradient(
-    140deg,
-    rgba(255, 255, 255, 0.045) 0%,
-    rgba(255, 255, 255, 0) 45%,
-    rgba(255, 255, 255, 0.03) 100%
-  );
+  box-shadow:
+    0 1px 2px rgba(11, 13, 15, 0.04),
+    0 1px 1px rgba(11, 13, 15, 0.03);
 }
 
 @utility volt-glow {
-  box-shadow: 0 0 0 1px rgba(215, 255, 62, 0.28),
-    0 8px 32px -8px rgba(215, 255, 62, 0.35);
+  box-shadow:
+    0 1px 2px rgba(11, 13, 15, 0.1),
+    0 8px 20px -10px rgba(95, 122, 0, 0.55);
 }
 
 @utility shimmer-band {
   background-image: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.07) 50%,
-    rgba(255, 255, 255, 0) 100%
+    rgba(11, 13, 15, 0) 0%,
+    rgba(11, 13, 15, 0.06) 50%,
+    rgba(11, 13, 15, 0) 100%
   );
   background-size: 200% 100%;
   animation: var(--animate-shimmer);

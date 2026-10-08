@@ -5,10 +5,12 @@ import { Badge, Card, SectionHeader } from "@/components/ui/card";
 import { Button, Chip } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/header";
 import { SpotMeter } from "@/components/ui/metrics";
+import { Photo } from "@/components/ui/photo";
 import { usePrototype } from "@/lib/prototype-state";
 import { COMMUNITIES, SESSIONS, USERS } from "@/lib/mock-data";
 import { sessionById, userById, visibleSpots } from "@/lib/selectors";
-import { activityOf, areaLabel } from "@/lib/format";
+import { areaLabel } from "@/lib/format";
+import { Glyph } from "@/components/ui/glyph";
 import { useState } from "react";
 
 export function SessionDetail({ id }: { id: string }) {
@@ -25,7 +27,6 @@ export function SessionDetail({ id }: { id: string }) {
 
   const joined = isSessionJoined(s.id);
   const spots = visibleSpots(s, joined);
-  const activity = activityOf(s.activity);
   const community = s.communityId
     ? COMMUNITIES.find((c) => c.id === s.communityId)
     : undefined;
@@ -45,29 +46,46 @@ export function SessionDetail({ id }: { id: string }) {
         title=""
         backHref="/app/sessions"
         backLabel="Sessions"
-        right={
-          <span className="flex h-14 w-14 items-center justify-center rounded-3xl bg-ink-750 text-3xl ring-1 ring-inset ring-ink-600">
-            {activity.emoji}
-          </span>
-        }
       />
 
-      <div className="mb-5 animate-fade-up">
+      <div className="relative animate-fade-up overflow-hidden rounded-2xl">
+        <Photo
+          name="session"
+          alt="People training together in a gym"
+          ratio="aspect-[16/9]"
+          sizes="(max-width: 440px) 100vw, 440px"
+          priority
+          scrim
+        />
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-ink-50">
+            <Glyph name={s.activity} size={22} />
+          </span>
+          <h1 className="font-display text-xl font-extrabold leading-tight tracking-tight text-white">
+            {s.title}
+          </h1>
+          <p className="num mt-1 text-[13px] text-white/75">
+            {s.dayLabel} · {s.date} · {s.time}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 mb-5 animate-fade-up">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={s.cost === 0 ? "ok" : "info"}>
             {s.cost === 0 ? "Free" : `₦${s.cost.toLocaleString()}`}
           </Badge>
           <Badge tone="muted">{s.level}</Badge>
-          {community && <Badge tone="volt">{community.emoji} {community.name}</Badge>}
+          {community && (
+            <Badge tone="volt">
+              <Glyph name={community.activity} size={12} strokeWidth={2.2} />
+              {community.name}
+            </Badge>
+          )}
         </div>
-        <h1 className="mt-3 font-display text-2xl font-extrabold leading-tight tracking-tight text-ink-50">
-          {s.title}
-        </h1>
-        <p className="num mt-2 text-[15px] text-ink-300">
-          {s.dayLabel} · {s.date} · {s.time}
-        </p>
-        <p className="num mt-1 text-[14px] text-ink-400">
-          📍 {s.location} · {areaLabel(s.area)}
+        <p className="num mt-3 flex items-center gap-1.5 text-[14px] text-ink-400">
+          <Glyph name="pin" size={13} strokeWidth={2} />
+          {s.location} · {areaLabel(s.area)}
         </p>
       </div>
 
@@ -85,7 +103,7 @@ export function SessionDetail({ id }: { id: string }) {
           </Button>
           {joined ? (
             <Button variant="primary" href={`/app/checkin?s=${s.id}`}>
-              {checkedIn ? "Checked in ✓" : "Check in"}
+              {checkedIn ? "Checked in" : "Check in"}
             </Button>
           ) : (
             <Button variant="secondary" disabled>
@@ -103,14 +121,10 @@ export function SessionDetail({ id }: { id: string }) {
       </Card>
 
       {/* Organiser */}
-      <section className="mb-6">
+      <section className="mb-7 border-b border-ink-700 pb-6">
         <SectionHeader label="Organiser" />
-        <Card className="flex items-center gap-3.5 p-4">
-          <Avatar
-            initials={initials(s.organizerName)}
-            tone={2}
-            size="md"
-          />
+        <div className="flex items-center gap-3.5">
+          <Avatar initials={initials(s.organizerName)} tone={2} size="md" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold text-ink-50">
               {s.organizerName}
@@ -122,63 +136,62 @@ export function SessionDetail({ id }: { id: string }) {
           <Chip size="sm" onClick={() => undefined}>
             Message
           </Chip>
-        </Card>
+        </div>
       </section>
 
       {/* About */}
-      <section className="mb-6">
+      <section className="mb-7 border-b border-ink-700 pb-6">
         <SectionHeader label="About this session" />
-        <Card className="p-4">
-          <p className="text-[14px] leading-relaxed text-ink-300">
-            {s.description}
-          </p>
-        </Card>
+        <p className="text-[14px] leading-relaxed text-ink-300">
+          {s.description}
+        </p>
       </section>
 
       {/* Attendees */}
-      <section className="mb-6">
+      <section className="mb-7 border-b border-ink-700 pb-6">
         <SectionHeader
           label="Who's coming"
           hint={`${s.attendeeIds.length} confirmed`}
           action={{ label: "Invite friends", href: "#" }}
         />
-        <Card className="p-4">
-          <AvatarStack
-            people={s.attendeeIds.map((aid) => {
-              const u = userById(aid);
-              return { initials: u.initials, tone: u.tone };
-            })}
-            size="md"
-            max={6}
-          />
-          <div className="mt-4 space-y-2.5">
-            {s.attendeeIds.slice(0, 4).map((aid) => {
-              const u = userById(aid);
-              return (
-                <div key={aid} className="flex items-center gap-3">
-                  <Avatar initials={u.initials} tone={u.tone} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-semibold text-ink-100">
-                      {u.name}
-                    </p>
-                    <p className="truncate text-[11px] text-ink-500">
-                      {u.handle} · {u.fitnessLevel}
-                    </p>
-                  </div>
+        <AvatarStack
+          people={s.attendeeIds.map((aid) => {
+            const u = userById(aid);
+            return { initials: u.initials, tone: u.tone };
+          })}
+          size="md"
+          max={6}
+        />
+        <div className="mt-4">
+          {s.attendeeIds.slice(0, 4).map((aid) => {
+            const u = userById(aid);
+            return (
+              <div
+                key={aid}
+                className="flex items-center gap-3 border-b border-ink-700 py-2.5 last:border-0"
+              >
+                <Avatar initials={u.initials} tone={u.tone} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold text-ink-100">
+                    {u.name}
+                  </p>
+                  <p className="truncate text-[11px] text-ink-500">
+                    {u.handle} · {u.fitnessLevel}
+                  </p>
                 </div>
-              );
-            })}
-            {s.attendeeIds.length > 4 && (
-              <p className="num pt-1 text-center text-[12px] text-ink-500">
-                +{s.attendeeIds.length - 4} more
-              </p>
-            )}
-          </div>
-        </Card>
+              </div>
+            );
+          })}
+          {s.attendeeIds.length > 4 && (
+            <p className="num pt-2 text-center text-[12px] text-ink-500">
+              +{s.attendeeIds.length - 4} more
+            </p>
+          )}
+        </div>
       </section>
 
       {/* Session chat (PRD §12) */}
-      <section className="mb-6">
+      <section className="mt-7">
         <SectionHeader label="Session chat" hint="Participants only" />
         <Card className="p-4">
           <ul className="space-y-3">
@@ -192,7 +205,7 @@ export function SessionDetail({ id }: { id: string }) {
                   <div
                     className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
                       mine
-                        ? "bg-volt-400 text-ink-950"
+                        ? "bg-volt-400 text-onvolt"
                         : "bg-ink-750 text-ink-200"
                     }`}
                   >
@@ -203,8 +216,8 @@ export function SessionDetail({ id }: { id: string }) {
                     )}
                     <p className="text-[13px] leading-snug">{m.text}</p>
                     <p
-                      className={`num mt-1 text-[10px] ${
-                        mine ? "text-ink-950/60" : "text-ink-600"
+                      className={`num mt-1 text-[11px] ${
+                        mine ? "text-onvolt/60" : "text-ink-600"
                       }`}
                     >
                       {m.ago}
@@ -236,14 +249,14 @@ export function SessionDetail({ id }: { id: string }) {
       </section>
 
       {/* Actions */}
-      <section>
-        <Card className="grid grid-cols-2 gap-2.5 p-4">
+      <section className="mt-6">
+        <div className="grid grid-cols-2 gap-2.5">
           <Button
             variant="secondary"
             onClick={() => checkIn(s.id)}
             disabled={checkedIn}
           >
-            {checkedIn ? "Checked in ✓" : "Check in now"}
+            {checkedIn ? "Checked in" : "Check in now"}
           </Button>
           <Button variant="secondary" onClick={() => undefined}>
             Add to calendar
@@ -254,7 +267,7 @@ export function SessionDetail({ id }: { id: string }) {
           <Button variant="danger" onClick={() => undefined}>
             Report
           </Button>
-        </Card>
+        </div>
       </section>
 
       <span className="sr-only">{USERS.length} attendees available</span>

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { FieldLabel, OnboardingShell } from "@/components/onboarding-shell";
+import { List, ListRow } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
 import { LAGOS_AREAS } from "@/lib/types";
 import { usePrototype } from "@/lib/prototype-state";
 import type { LagosAreaId } from "@/lib/types";
+import { Glyph } from "@/components/ui/glyph";
 
 export default function Location() {
   const { profile, setDraft } = usePrototype();
@@ -28,62 +30,55 @@ export default function Location() {
       hint="You can change this later in Profile."
     >
       <FieldLabel>Choose your area</FieldLabel>
-      <div className="grid grid-cols-2 gap-3">
+      <List variant="surface">
         {LAGOS_AREAS.map((a) => {
           const active = a.id === area;
           return (
-            <button
+            <ListRow
               key={a.id}
-              type="button"
+              layout="block"
+              className={cn("py-3.5", active && "bg-volt-400/[0.12]")}
               onClick={() => setArea(a.id)}
-              aria-pressed={active}
-              className={cn(
-                "group flex flex-col items-start gap-1 rounded-2xl border p-4 text-left transition active:scale-[0.97]",
-                active
-                  ? "border-volt-400 bg-volt-400/[0.08] shadow-[0_0_0_1px_rgba(215,255,62,0.3)]"
-                  : "border-ink-700 bg-ink-800 hover:border-ink-600",
-              )}
             >
-              <span className="flex w-full items-center justify-between">
-                <span className="text-lg" aria-hidden>
-                  {active ? "📍" : "🗺️"}
-                </span>
-                {active && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-volt-400 text-ink-950">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path
-                        d="M5 13l4 4L19 7"
-                        stroke="currentColor"
-                        strokeWidth="3.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+              <span className="flex items-center gap-3">
+                <Glyph
+                  name="pin"
+                  size={19}
+                  className={active ? "text-volt-700" : "text-ink-500"}
+                />
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={cn(
+                      "block text-sm font-bold",
+                      active ? "text-volt-800" : "text-ink-100",
+                    )}
+                  >
+                    {a.label}
                   </span>
-                )}
+                  <span className="block text-[12px] leading-snug text-ink-500">
+                    {a.note}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                    active
+                      ? "bg-volt-400 text-onvolt"
+                      : "border border-ink-600 text-transparent",
+                  )}
+                >
+                  <Glyph name="check" size={12} strokeWidth={3.4} />
+                </span>
               </span>
-              <span
-                className={cn(
-                  "mt-1 text-sm font-bold",
-                  active ? "text-volt-400" : "text-ink-100",
-                )}
-              >
-                {a.label}
-              </span>
-              <span className="text-[11px] leading-snug text-ink-500">
-                {a.note}
-              </span>
-            </button>
+            </ListRow>
           );
         })}
-      </div>
+      </List>
 
       <div className="mt-8">
         <FieldLabel>Your current gym (optional)</FieldLabel>
         <label className="flex items-center gap-3 rounded-xl border border-ink-600 bg-ink-850 px-4 py-3.5 focus-within:border-volt-400">
-          <span aria-hidden className="text-lg">
-            🏋️
-          </span>
+          <Glyph name="gym" size={19} className="text-ink-500" />
           <input
             value={gym}
             onChange={(e) => setGym(e.target.value)}

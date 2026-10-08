@@ -36,14 +36,14 @@ export function BottomSheet({
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-scrim/80 backdrop-blur-sm animate-fade-in"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto thin-scrollbar animate-sheet-up rounded-t-3xl border-t border-ink-700 bg-ink-850 px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-3",
+          "relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto thin-scrollbar animate-sheet-up rounded-t-3xl border-t border-ink-700 bg-ink-800 shadow-[0_-12px_40px_-16px_rgba(11,13,15,0.35)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-3",
           className,
         )}
       >

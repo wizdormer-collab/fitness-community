@@ -1,16 +1,18 @@
 "use client";
 
-import { Card, SectionHeader, Badge, Divider } from "@/components/ui/card";
+import { Card, SectionHeader, Badge, Divider, Band, List, ListRow } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/header";
 import { StatTile, Ring, StreakFlame, ProgressBar } from "@/components/ui/metrics";
 import { BarChart, Sparkline, Heatmap, ActivitySplit } from "@/components/ui/charts";
 import { Button, Chip } from "@/components/ui/controls";
 import { Avatar } from "@/components/ui/avatar";
+import { Glyph } from "@/components/ui/glyph";
 import { usePrototype } from "@/lib/prototype-state";
 import { PROGRESS, WORKOUTS } from "@/lib/mock-data";
 import { activityOf, duration, grouped } from "@/lib/format";
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
+const HEAT_LEGEND = ["#e9edf2", "#eef7cf", "#b9dd57", "#7a9e1b"];
 
 export default function Progress() {
   const { state } = usePrototype();
@@ -37,6 +39,7 @@ export default function Progress() {
     : PROGRESS.records;
 
   const recent = [...state.extraWorkouts, ...WORKOUTS].slice(0, 6);
+  const goalMet = state.weeklyCompleted >= PROGRESS.weeklyTarget;
 
   return (
     <div>
@@ -46,44 +49,46 @@ export default function Progress() {
         right={<StreakFlame days={state.streak} size="sm" />}
       />
 
-      {/* Headline numbers */}
-      <div className="mb-3 grid grid-cols-2 gap-3">
-        <StatTile
-          label="Workouts"
-          value={grouped(state.totalWorkouts)}
-          sub={`${PROGRESS.days}-day history`}
-          emoji="💪"
-        />
-        <StatTile
-          label="Training"
-          value={(state.trainingMinutes / 60).toFixed(1)}
-          unit="hrs"
-          sub={`${PROGRESS.weeklyAverage} this week`}
-          emoji="⏱"
-        />
-        <StatTile
-          label="Personal records"
-          value={state.personalRecords}
-          sub="All time"
-          emoji="🏆"
-          accent
-        />
-        <StatTile
-          label="Distance"
-          value="128.4"
-          unit="km"
-          sub="Last 90 days"
-          emoji="🏃"
-        />
-      </div>
+      {/* Headline numbers — unframed, one hairline under the block */}
+      <Band divided className="mb-6">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+          <StatTile
+            label="Workouts"
+            value={grouped(state.totalWorkouts)}
+            sub={`${PROGRESS.days}-day history`}
+            icon="gym"
+          />
+          <StatTile
+            label="Training"
+            value={(state.trainingMinutes / 60).toFixed(1)}
+            unit="hrs"
+            sub={`${PROGRESS.weeklyAverage} this week`}
+            icon="clock"
+          />
+          <StatTile
+            label="Personal records"
+            value={state.personalRecords}
+            sub="All time"
+            icon="trophy"
+            accent
+          />
+          <StatTile
+            label="Distance"
+            value="128.4"
+            unit="km"
+            sub="Last 90 days"
+            icon="running"
+          />
+        </div>
+      </Band>
 
-      {/* Weekly goal */}
-      <section className="mb-6">
+      {/* Weekly goal + commitment — straight on the canvas */}
+      <Band divided className="mb-6">
         <SectionHeader
           label="This week"
-          hint={`Target ${PROGRESS.weeklyTarget} sessions`}
+          hint={`Committed to ${PROGRESS.weeklyTarget} sessions`}
         />
-        <Card className="flex items-center gap-5 p-4">
+        <div className="flex items-center gap-5">
           <Ring
             value={state.weeklyCompleted}
             max={PROGRESS.weeklyTarget}
@@ -91,13 +96,11 @@ export default function Progress() {
             label="sessions"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-ink-100">
-              {state.weeklyCompleted >= PROGRESS.weeklyTarget
-                ? "Weekly goal met"
-                : `${PROGRESS.weeklyTarget - state.weeklyCompleted} to go`}
+            <p className="font-display text-base font-bold leading-tight text-ink-50">
+              {goalMet ? "Weekly goal met" : `${PROGRESS.weeklyTarget - state.weeklyCompleted} to go`}
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-ink-400">
-              {state.weeklyCompleted >= PROGRESS.weeklyTarget
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-400">
+              {goalMet
                 ? "Consistency beats intensity. Same time next week."
                 : "Two more sessions keeps your streak alive."}
             </p>
@@ -108,56 +111,61 @@ export default function Progress() {
               showLabel
             />
           </div>
-        </Card>
-      </section>
+        </div>
+        {/* PRD §8 — the commitment is public, so it reads as a promise, not a private counter. */}
+        <p className="mt-4 flex items-start gap-2 rounded-xl bg-volt-400/10 px-3.5 py-3 text-[13px] leading-snug text-volt-800 ring-1 ring-inset ring-volt-600/25">
+          <Glyph name="communities" size={16} className="mt-px shrink-0" />
+          <span>
+            Your community can see this commitment. {state.weeklyCompleted} of{" "}
+            {PROGRESS.weeklyTarget} logged — {goalMet ? "you showed up." : "still in progress."}
+          </span>
+        </p>
+      </Band>
 
-      {/* Weekly volume */}
-      <section className="mb-6">
-        <SectionHeader label="Weekly volume" hint="Sessions per week" />
+      {/* Charts — the only framed surfaces on this screen */}
+      <Band label="Weekly volume" hint="Sessions per week" className="mb-6">
         <Card className="p-4">
           <BarChart data={weeklyTrend} height={96} />
-          <div className="mt-3 flex justify-between text-[10px] text-ink-500">
+          <div className="mt-3 flex justify-between text-xs text-ink-500">
             <span>8 weeks ago</span>
             <span>This week</span>
           </div>
           <Divider className="my-4" />
-          <div className="flex items-end justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-500">
-                Distance trend
-              </p>
-              <Sparkline data={PROGRESS.distanceTrend} height={56} />
-              <p className="num mt-1 text-[11px] text-ink-400">
-                Peaked at 42 km in week 6
-              </p>
-            </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
+              Distance trend
+            </p>
+            <Sparkline data={PROGRESS.distanceTrend} height={56} />
+            <p className="num mt-1 text-[11px] text-ink-400">
+              Peaked at 42 km in week 6
+            </p>
           </div>
         </Card>
-      </section>
+      </Band>
 
-      {/* Consistency grid */}
-      <section className="mb-6">
-        <SectionHeader
-          label="Consistency"
-          hint="Last 90 days"
-          action={{ label: "Records", href: "#records" }}
-        />
+      {/* Consistency */}
+      <Band
+        label="Consistency"
+        hint="Last 90 days"
+        action={{ label: "Records", href: "#records" }}
+        className="mb-6"
+      >
         <Card className="p-4">
           <Heatmap days={PROGRESS.heatmap} />
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3 flex items-center justify-between gap-3">
             <div className="flex gap-1.5">
               {DAY_LETTERS.map((d, i) => (
-                <span key={i} className="w-4 text-center text-[9px] text-ink-600">
+                <span key={i} className="w-4 text-center text-[11px] text-ink-500">
                   {d}
                 </span>
               ))}
             </div>
-            <div className="flex items-center gap-1.5 text-[9px] text-ink-500">
+            <div className="flex items-center gap-1.5 text-[11px] text-ink-500">
               <span>Less</span>
-              {["#171a1f", "#4f660f", "#7a9e1b", "#d7ff3e"].map((c) => (
+              {HEAT_LEGEND.map((c) => (
                 <span
                   key={c}
-                  className="h-2.5 w-2.5 rounded-[3px]"
+                  className="h-2.5 w-2.5 rounded-[3px] ring-1 ring-ink-700"
                   style={{ background: c }}
                 />
               ))}
@@ -165,54 +173,56 @@ export default function Progress() {
             </div>
           </div>
         </Card>
-      </section>
+      </Band>
 
-      {/* Activity split */}
-      <section className="mb-6">
-        <SectionHeader label="Where time goes" hint="By session type" />
-        <Card className="p-4">
-          <ActivitySplit items={PROGRESS.byActivity} />
-          <Divider className="my-4" />
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-ink-400">Longest streak</span>
-            <span className="num font-display font-bold text-warn-400">
-              21 days
+      {/* Where time goes — unboxed bars, stats as divided rows */}
+      <Band label="Where time goes" hint="By session type" className="mb-6">
+        <ActivitySplit items={PROGRESS.byActivity} />
+        <List className="mt-4">
+          <ListRow>
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-sm text-ink-400">Longest streak</span>
+              <span className="num font-display font-bold text-warn-400">21 days</span>
             </span>
-          </div>
-          <div className="mt-2.5 flex items-center justify-between text-xs">
-            <span className="text-ink-400">Avg session</span>
-            <span className="num font-display font-bold text-ink-100">
-              {duration(Math.round(state.trainingMinutes / Math.max(1, state.totalWorkouts)))}
+          </ListRow>
+          <ListRow>
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-sm text-ink-400">Avg session</span>
+              <span className="num font-display font-bold text-ink-100">
+                {duration(
+                  Math.round(state.trainingMinutes / Math.max(1, state.totalWorkouts)),
+                )}
+              </span>
             </span>
-          </div>
-        </Card>
-      </section>
+          </ListRow>
+        </List>
+      </Band>
 
       {/* Personal records */}
       <section id="records" className="mb-6">
-        <SectionHeader label="Personal records" hint="PRD §16 — tracked per exercise" />
-        <Card className="divide-y divide-ink-700 p-0">
+        <SectionHeader label="Personal records" hint="Tracked per exercise" />
+        <List>
           {records.map((r) => (
-            <div key={r.id} className="flex items-center gap-3 px-4 py-3.5">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-volt-400/[0.1] text-base">
-                🏅
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-ink-100">
-                  {r.exercise}
-                </p>
-                <p className="num truncate text-[11px] text-ink-500">
-                  {r.from} → {r.to} {r.unit}
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
+            <ListRow key={r.id} className="px-0 py-3.5">
+              <span className="flex items-center gap-3.5">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-volt-400/[0.18] text-volt-700">
+                  <Glyph name="medal" size={19} strokeWidth={2} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-ink-100">
+                    {r.exercise}
+                  </span>
+                  <span className="num block truncate text-[11px] text-ink-500">
+                    {r.from} → {r.to} {r.unit}
+                  </span>
+                </span>
                 <Badge tone={r.isNew ? "volt" : "muted"}>
                   {r.isNew ? "New PR" : r.ago}
                 </Badge>
-              </div>
-            </div>
+              </span>
+            </ListRow>
           ))}
-        </Card>
+        </List>
       </section>
 
       {/* Recent workouts */}
@@ -221,34 +231,36 @@ export default function Progress() {
           label="Recent workouts"
           action={{ label: "Log new", href: "/app/log" }}
         />
-        <Card className="divide-y divide-ink-700 p-0">
+        <List>
           {recent.map((w) => {
             const a = activityOf(w.activity);
             return (
-              <div key={w.id} className="flex items-center gap-3.5 px-4 py-3.5">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-xl">
-                  {a.emoji}
+              <ListRow key={w.id} className="px-0 py-3.5">
+                <span className="flex items-center gap-3.5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-ink-300">
+                    <Glyph name={a.id} size={21} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-sm font-semibold text-ink-100">
+                        {a.label}
+                      </span>
+                      {w.isPR && <Badge tone="volt">PR</Badge>}
+                    </span>
+                    <span className="num block truncate text-[11px] text-ink-500">
+                      {w.dayLabel} · {w.date} · {duration(w.durationMin)}
+                    </span>
+                  </span>
+                  <span className="num shrink-0 text-right text-xs font-semibold text-ink-300">
+                    {w.summary.length > 22
+                      ? `${w.summary.slice(0, 20)}…`
+                      : w.summary}
+                  </span>
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-ink-100">
-                      {a.label}
-                    </p>
-                    {w.isPR && <Badge tone="volt">PR</Badge>}
-                  </div>
-                  <p className="num truncate text-[11px] text-ink-500">
-                    {w.dayLabel} · {w.date} · {duration(w.durationMin)}
-                  </p>
-                </div>
-                <p className="num shrink-0 text-right text-xs font-semibold text-ink-300">
-                  {w.summary.length > 22
-                    ? `${w.summary.slice(0, 20)}…`
-                    : w.summary}
-                </p>
-              </div>
+              </ListRow>
             );
           })}
-        </Card>
+        </List>
       </section>
 
       <div className="flex flex-wrap gap-2">
@@ -261,23 +273,24 @@ export default function Progress() {
         <Chip size="sm">Export data</Chip>
       </div>
 
-      <Card className="mt-5 border-ink-700 bg-ink-850 p-4">
-        <div className="flex items-start gap-3">
-          <Avatar initials="TB" tone={3} size="sm" />
-          <div className="min-w-0">
-            <p className="text-[13px] leading-relaxed text-ink-300">
-              “Volume without progression is just motion. Add 2.5kg or one rep
-              every week.”
-            </p>
-            <p className="mt-1.5 text-[11px] font-semibold text-ink-500">
-              Tunde Bakare · Strength coach
-            </p>
-          </div>
+      <div className="mt-5 flex items-start gap-3 border-l-2 border-volt-600 pl-4">
+        <Avatar initials="TB" tone={3} size="sm" />
+        <div className="min-w-0">
+          <p className="text-[13px] leading-relaxed text-ink-300">
+            “Volume without progression is just motion. Add 2.5kg or one rep
+            every week.”
+          </p>
+          <p className="mt-1.5 text-[11px] font-semibold text-ink-500">
+            Tunde Bakare · Strength coach
+          </p>
         </div>
-        <Button variant="ghost" full className="mt-3" href="#records">
+      </div>
+
+      <div className="mt-5">
+        <Button variant="ghost" full href="#records">
           View all records
         </Button>
-      </Card>
+      </div>
     </div>
   );
 }

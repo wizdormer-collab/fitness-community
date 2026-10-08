@@ -52,7 +52,7 @@ export function Chip({
     "inline-flex select-none items-center gap-1.5 rounded-xl border font-medium transition",
     size === "md" ? "px-3.5 py-2.5 text-sm" : "px-3 py-1.5 text-xs",
     selected
-      ? "border-volt-400 bg-volt-400 text-ink-950 shadow-[0_0_0_1px_rgba(215,255,62,0.35)]"
+      ? "border-volt-400 bg-volt-400 text-onvolt shadow-[0_0_0_1px_rgba(215,255,62,0.35)]"
       : "border-ink-700 bg-ink-800 text-ink-200 hover:border-ink-600 hover:text-ink-100",
     interactive && "active:scale-[0.97]",
     disabled && "cursor-not-allowed opacity-40",
@@ -92,7 +92,7 @@ export function Tag({
 }) {
   const tones = {
     muted: "bg-ink-750 text-ink-300",
-    volt: "bg-volt-400/15 text-volt-400",
+    volt: "bg-volt-400/15 text-volt-700",
     ok: "bg-ok-500/15 text-ok-400",
   };
   return (
@@ -140,7 +140,7 @@ export function SegmentedControl<T extends string>({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition",
               active
-                ? "bg-volt-400 text-ink-950"
+                ? "bg-volt-400 text-onvolt"
                 : "text-ink-300 hover:text-ink-100",
             )}
           >
@@ -183,7 +183,7 @@ export function Toggle({
       >
         <span
           className={cn(
-            "absolute top-0.5 h-5 w-5 rounded-full bg-ink-950 transition-all",
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all",
             checked ? "left-[22px]" : "left-0.5",
           )}
         />
@@ -215,7 +215,7 @@ export function Button({
   type?: "button" | "submit";
 }) {
   const variants = {
-    primary: "bg-volt-400 text-ink-950 hover:bg-volt-300 volt-glow",
+    primary: "bg-volt-400 text-onvolt hover:bg-volt-500 volt-glow",
     secondary: "border border-ink-600 bg-ink-800 text-ink-100 hover:bg-ink-750",
     ghost: "text-ink-300 hover:bg-ink-800 hover:text-ink-100",
     danger: "border border-bad-500/40 bg-bad-500/10 text-bad-400",

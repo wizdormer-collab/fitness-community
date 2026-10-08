@@ -49,7 +49,7 @@ export function Avatar({
       className={cn(
         "inline-flex shrink-0 select-none items-center justify-center rounded-full font-display font-bold tracking-tight",
         s.box,
-        ring && "ring-2 ring-ink-950",
+        ring && "ring-2 ring-white",
         className,
       )}
       aria-hidden
@@ -87,7 +87,7 @@ export function AvatarStack({
         />
       ))}
       {overflow > 0 && (
-        <span className="-ml-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-ink-700 text-[11px] font-semibold text-ink-200 ring-2 ring-ink-950">
+        <span className="-ml-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-ink-700 text-[11px] font-semibold text-ink-200 ring-2 ring-white">
           +{overflow}
         </span>
       )}
