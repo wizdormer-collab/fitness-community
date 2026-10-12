@@ -46,11 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-dvh bg-ink-950 font-sans text-ink-100 antialiased">
-        <PrototypeProvider>
-          <div className="mx-auto w-full max-w-[440px] px-4 pb-28 pt-[max(1rem,env(safe-area-inset-top))] safe-b sm:px-6">
-            {children}
-          </div>
-        </PrototypeProvider>
+        <PrototypeProvider>{children}</PrototypeProvider>
         <SWRegister />
       </body>
     </html>

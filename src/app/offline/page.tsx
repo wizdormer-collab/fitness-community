@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function Offline() {
   return (
-    <div className="flex min-h-[75vh] flex-col items-center justify-center text-center">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-4 py-10 text-center sm:px-6">
       <div className="w-full max-w-[320px] overflow-hidden rounded-2xl">
         <Photo
           name="empty"
