@@ -116,13 +116,13 @@ Inter for everything (`--font-inter` → `--font-display` / `--font-body`).
 | A run of similar rows (list, settings, picker) | `List` + `ListRow` |
 | A pulled-aside note | `border-l-2 border-volt-600 pl-4` callout |
 | A 3-up stat strip | `grid grid-cols-3 divide-x divide-ink-700 border-y border-ink-700` |
-| A browse grid of results | `grid grid-cols-1 gap-3 lg:grid-cols-2` of `Card`s (Discover) |
+| A browse grid of results | `grid grid-cols-1 gap-3 lg:grid-cols-2` of `Card`s (Discover, Sessions) |
 
 **Maximum two `Card`s per screen.** The pre-redesign screens had six or seven;
 each was collapsed into a `Band`/`List` or merged. The rule is about *competing
 framed sections stacked in a column* — it does not apply to a browse grid,
-where the repeated cards are the content itself (Discover is the only such
-screen today).
+where the repeated cards are the content itself (Discover and Sessions are the
+two such screens today).
 
 Card footers inside a stretched grid row use `mt-auto` with the parent on
 `gap-3`: the auto margin absorbs the slack a taller neighbour creates, and the
@@ -188,8 +188,8 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | Welcome | 0 (photo hero + divided `<ul>`) |
 | Home | 3 (week, today's session, community) + 1 `List` surface (nearby) |
 | Progress | 2 (weekly volume, consistency) |
-| Sessions | 0 (one `List` group) |
-| Session detail | 2 (join CTA, chat) + photo hero |
+| Sessions | browse grid of session cards (see §3 exception) |
+| Session detail | 2 (booking panel, chat) + photo hero |
 | Check-in | 1 (QR tool) + photo band |
 | Log | 0 (two `List` groups) |
 | Community feed | 1 (pinned community) |
@@ -265,6 +265,8 @@ default. Below `lg` every screen stays a single centred phone column
 | Content frame | `max-w-[440px]`, centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
 | Home | single column | explicit 12-col placement: personal rail (4) left, live feed (8) right |
 | Discover | single-column result cards, chip rail and the "Recommended" row scroll edge-to-edge | same DOM, `lg:grid-cols-2` for results and `lg:grid-cols-3` for the Recommended row; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
+| Sessions | stacked session cards, segmented filter full width | same DOM, `lg:grid-cols-2`; segmented filter capped at `lg:max-w-lg` so it does not read as a banner |
+| Session detail | one column: hero → booking panel → organiser → about → attendees → chat | same DOM, `lg:max-w-4xl` with `lg:grid-cols-[minmax(0,1fr)_320px]`; the booking panel is first in the DOM (so the join action stays directly under the hero on mobile) and ordered to the right column at `lg`, where it is sticky |
 | Onboarding | one column | brand rail left + form card right |
 
 The desktop layouts are built with `lg:col-start/row-start` on the **same

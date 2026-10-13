@@ -89,9 +89,21 @@ Tokens live in `src/app/globals.css`:
 one or two per screen. Everything else uses `Band` (unboxed section),
 `List`/`ListRow` (one white group per section), or a plain hairline-divided
 block. A column of six identical cards is what makes a screen read as a
-mockup, so the redesign systematically collapsed them. Discover is the one
-deliberate exception: a browse grid of repeated result cards *is* the content,
-not competing framed sections (`docs/UI-SPEC.md` §3).
+mockup, so the redesign systematically collapsed them. Discover and Sessions
+are the two deliberate exceptions: a browse grid of repeated result cards *is*
+the content, not competing framed sections (`docs/UI-SPEC.md` §3). Sessions
+took the grid because the old single-column `ListRow` stretched every spot
+meter across ~900px, separating "12/40 spots" from its "Open" label by half a
+screen.
+
+**Session state.** `visibleSpots()` in `selectors.ts` is the one source of truth
+for capacity: it moves by exactly one when you join or leave, and the attendee
+count on both the list card and the detail takes the same delta, so the number
+beside the avatars can never disagree with the meter. The status line on the
+detail is derived from the store (checked in / joined / full / spots left) and
+is marked `aria-live`, so it is the actual result of your last action rather
+than a scripted success message. Check-in stays gated on membership and hands
+off to the venue-code flow at `/app/checkin` — there is no shortcut around it.
 
 **Discover data.** `buildDiscoverResults()` in `selectors.ts` is the single
 entry point: it returns the seeded `DISCOVER_ITEMS` (communities expanded into

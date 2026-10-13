@@ -1,7 +1,9 @@
 import {
   ACTIVITIES,
+  FITNESS_LEVELS,
   LAGOS_AREAS,
   type ActivityId,
+  type FitnessLevelId,
   type LagosAreaId,
 } from "@/lib/types";
 
@@ -17,6 +19,11 @@ export function activityOf(id: ActivityId) {
 
 export function activityLabel(id: ActivityId): string {
   return activityOf(id).label;
+}
+
+/** Sessions store the id ("beginner"); screens show the label. */
+export function levelLabel(id: FitnessLevelId): string {
+  return FITNESS_LEVELS.find((l) => l.id === id)?.label ?? id;
 }
 
 // ---------- Numbers ----------
