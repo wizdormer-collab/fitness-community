@@ -184,7 +184,7 @@ export function Ring({
   size = 72,
   stroke = 7,
   label,
-  accent = "#7a9e1b",
+  accent = "var(--color-volt-600)",
 }: {
   value: number;
   max: number;
@@ -207,7 +207,7 @@ export function Ring({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#e1e5eb"
+          stroke="var(--color-ink-700)"
           strokeWidth={stroke}
         />
         <circle

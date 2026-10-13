@@ -12,7 +12,7 @@ import { PROGRESS, WORKOUTS } from "@/lib/mock-data";
 import { activityOf, duration, grouped } from "@/lib/format";
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
-const HEAT_LEGEND = ["#e9edf2", "#eef7cf", "#b9dd57", "#7a9e1b"];
+const HEAT_LEGEND = ["#eceae0", "#eef7cf", "#b9dd57", "#628309"];
 
 export default function Progress() {
   const { state } = usePrototype();

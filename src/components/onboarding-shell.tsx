@@ -132,7 +132,7 @@ export function OnboardingShell({
 
       {/* Form column — the phone layout on mobile, a centred card on desktop. */}
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 lg:max-w-none lg:px-14 lg:py-12 xl:px-20">
-        <div className="flex min-h-dvh w-full max-w-md flex-col lg:my-auto lg:min-h-0 lg:max-w-[520px] lg:rounded-3xl lg:border lg:border-ink-700 lg:bg-white lg:p-10 lg:shadow-[0_24px_60px_-30px_rgba(11,13,15,0.25)] xl:max-w-[560px]">
+        <div className="flex min-h-dvh w-full max-w-md flex-col lg:my-auto lg:min-h-0 lg:max-w-[520px] lg:rounded-3xl lg:border lg:border-ink-700 lg:bg-white lg:p-10 lg:shadow-[0_24px_60px_-30px_rgba(16,31,45,0.25)] xl:max-w-[560px]">
           <header className="flex items-center justify-between gap-4 pb-8 pt-[calc(env(safe-area-inset-top)+1.5rem)] lg:pt-0">
             {back ? (
               <Link

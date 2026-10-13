@@ -52,21 +52,22 @@ navigation and has no hydration mismatch.
 
 ## Design system
 
-**Light · Clean · Athletic** — white canvas, dark ink text, volt-lime accent,
-Inter throughout.
+**Deep navy · warm cream · lime** — `#101F2D` text, `#F8F7F1` canvas, white
+cards, `#B8F34A` accent, Inter throughout.
 
 Tokens live in `src/app/globals.css`:
 
 - **ink** — neutral scale. `50` is the darkest (primary text) → `950` is the
   lightest (page canvas). `700` is the hairline; `750–950` are surfaces.
   Names were kept from the original dark build so the class references could be
-  inverted in place rather than renamed.
+  re-pointed in place rather than renamed — which is also how the whole app was
+  moved onto the navy/cream palette without touching component files.
 - **volt** — split by role, not by hue:
-  - `volt-400` (#d7ff3e) = **fills** only, always paired with `text-onvolt`
-  - `volt-600` (#7a9e1b) = **graphics** (bars, rings, chart lines, hairlines)
-  - `volt-700` (#5f7a00) = **text accent** (4.9:1 on white)
-- **onvolt** / **scrim** — text on a lime fill, and dark overlays. These two
-  deliberately do not ride the ink scale.
+  - `volt-400` (#b8f34a) = **fills** only, always paired with `text-onvolt`
+  - `volt-600` (#628309) = **graphics** (bars, rings, chart lines, hairlines)
+  - `volt-700` (#4e6b0a) = **text accent** (6.1:1 on white, 5.7:1 on cream)
+- **onvolt** / **scrim** — text on a lime fill, and dark overlays. Both are
+  `#101F2D`; these two deliberately do not ride the ink scale.
 - **ok / warn / bad / info** — `-400` stops are read as text (darkened for AA),
   `-500` stops are used as fills (kept vivid).
 

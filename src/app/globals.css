@@ -1,45 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  /* ---- Ink (neutral) scale — LIGHT canvas ----
+  /* ---- Ink (neutral) scale — DEEP NAVY text on a WARM CREAM canvas ----
      Reading direction: 50 = darkest (primary text) → 950 = lightest (canvas).
      50–600 are text/stroke weights, 700 is the hairline, 750–950 are surfaces.
-     Names are unchanged from the original dark build on purpose: inverting the
-     values repoints ~650 class references at once instead of renaming them. */
-  --color-ink-50: #0b0d0f;
-  --color-ink-100: #171b20;
-  --color-ink-200: #2f353d;
-  --color-ink-300: #4c5460;
-  --color-ink-400: #626a77;
-  --color-ink-500: #7b8391;
-  --color-ink-600: #949ca8;
-  --color-ink-700: #e1e5eb;
-  --color-ink-750: #e7ebf0;
-  --color-ink-800: #ffffff;
-  --color-ink-850: #eef1f5;
+     Names are unchanged from the original build on purpose: repointing the
+     values re-themes ~650 class references at once instead of renaming them.
+     The ramp is navy-tinted at the dark end and cream-tinted at the light end
+     so nothing reads as a cold grey next to #101F2D / #F8F7F1. */
+  --color-ink-50: #101f2d; /* #101F2D — headings, primary text, 16.6:1 on white */
+  --color-ink-100: #1b2c3b; /* body copy */
+  --color-ink-200: #2e4256;
+  --color-ink-300: #455a6e; /* secondary text, 7.1:1 on white */
+  --color-ink-400: #5b7085; /* tertiary text / overlines, 5.1:1 on white */
+  --color-ink-500: #64788d; /* muted text, 4.6:1 on white — still AA */
+  --color-ink-600: #7b8ea1; /* placeholders, chevrons, hover borders */
+  --color-ink-700: #dedacc; /* the warm hairline — every subtle border */
+  --color-ink-750: #edeae0;
+  --color-ink-800: #ffffff; /* card surface */
+  --color-ink-850: #f1efe7; /* recessed input / track surface */
   --color-ink-900: #ffffff;
-  --color-ink-950: #f2f4f7;
+  --color-ink-950: #f8f7f1; /* #F8F7F1 — warm cream canvas */
 
-  /* ---- Volt (accent) — lime
+  /* ---- Volt (accent) — lime #B8F34A
      Split by role, not by hue:
        400 = the FILL (buttons, dots, chips, selected states)
-       700 = the TEXT accent on light surfaces (#d7ff3e text on white is 1.2:1) */
-  --color-volt-100: #fbffeb;
-  --color-volt-200: #f3ffcf;
-  --color-volt-300: #e6ff9b;
-  --color-volt-400: #d7ff3e;
-  --color-volt-500: #c2ef1a;
-  /* 600 is the step where lime becomes readable as a graphic on white (3.1:1) */
-  --color-volt-600: #7a9e1b;
-  --color-volt-700: #5f7a00;
-  --color-volt-800: #475c00;
+       600 = thin graphics that must separate from a light track (bars, rings)
+       700 = the TEXT accent on light surfaces (#B8F34A text on white is 1.3:1) */
+  --color-volt-100: #f4fee4;
+  --color-volt-200: #e9fdcb;
+  --color-volt-300: #d5fa9e;
+  --color-volt-400: #b8f34a;
+  --color-volt-500: #a6e02e;
+  /* 600 is the step where lime stays a readable graphic on cream (4.4:1) */
+  --color-volt-600: #628309;
+  --color-volt-700: #4e6b0a; /* 6.1:1 on white, 5.7:1 on cream — AA/AAA */
+  --color-volt-800: #3b520a;
 
   /* ---- On-accent + scrim ----
      Two roles that must not ride the ink scale: text sitting on a lime fill,
-     and dark overlays (sheet backdrop, check-in toast) that stay dark even
-     though ink-950 is now the light canvas. */
-  --color-onvolt: #0b0d0f;
-  --color-scrim: #0b0d0f;
+     and dark overlays (sheet backdrop, check-in toast). Both are navy —
+     #101F2D on #B8F34A measures 12.6:1, past AAA. */
+  --color-onvolt: #101f2d;
+  --color-scrim: #101f2d;
 
   /* ---- Semantic ----
      -400 stops are consumed as TEXT (darkened for AA on white).
@@ -246,26 +249,27 @@ select {
   }
 }
 
-/* Light-theme equivalent of the old dark sheen: no colour wash (it would
-   cover tinted card variants), just a lift off the canvas. */
+/* White cards on a warm cream canvas differ by only ~1.07:1 in luminance, so
+   the lift has to carry the separation the fill cannot. No colour wash — it
+   would cover tinted card variants — just a soft, low, navy-tinted shadow. */
 @utility card-shine {
   box-shadow:
-    0 1px 2px rgba(11, 13, 15, 0.04),
-    0 1px 1px rgba(11, 13, 15, 0.03);
+    0 1px 2px rgba(16, 31, 45, 0.05),
+    0 12px 28px -20px rgba(16, 31, 45, 0.28);
 }
 
 @utility volt-glow {
   box-shadow:
-    0 1px 2px rgba(11, 13, 15, 0.1),
-    0 8px 20px -10px rgba(95, 122, 0, 0.55);
+    0 1px 2px rgba(16, 31, 45, 0.1),
+    0 8px 20px -10px rgba(78, 107, 10, 0.55);
 }
 
 @utility shimmer-band {
   background-image: linear-gradient(
     90deg,
-    rgba(11, 13, 15, 0) 0%,
-    rgba(11, 13, 15, 0.06) 50%,
-    rgba(11, 13, 15, 0) 100%
+    rgba(16, 31, 45, 0) 0%,
+    rgba(16, 31, 45, 0.06) 50%,
+    rgba(16, 31, 45, 0) 100%
   );
   background-size: 200% 100%;
   animation: var(--animate-shimmer);

@@ -52,7 +52,7 @@ export function Chip({
     "inline-flex select-none items-center gap-1.5 rounded-xl border font-medium transition",
     size === "md" ? "px-3.5 py-2.5 text-sm" : "px-3 py-1.5 text-xs",
     selected
-      ? "border-volt-400 bg-volt-400 text-onvolt shadow-[0_0_0_1px_rgba(215,255,62,0.35)]"
+      ? "border-volt-400 bg-volt-400 text-onvolt shadow-[0_0_0_1px_rgba(184,243,74,0.45)]"
       : "border-ink-700 bg-ink-800 text-ink-200 hover:border-ink-600 hover:text-ink-100",
     interactive && "active:scale-[0.97]",
     disabled && "cursor-not-allowed opacity-40",

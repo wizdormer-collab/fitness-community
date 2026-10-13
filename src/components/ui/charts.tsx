@@ -6,7 +6,7 @@ import { Glyph } from "@/components/ui/glyph";
 export function Sparkline({
   data,
   height = 72,
-  accent = "#7a9e1b",
+  accent = "var(--color-volt-600)",
   className,
 }: {
   data: number[];
@@ -65,7 +65,7 @@ export function Sparkline({
 export function BarChart({
   data,
   height = 96,
-  accent = "#7a9e1b",
+  accent = "var(--color-volt-600)",
   className,
 }: {
   data: number[];
@@ -89,7 +89,7 @@ export function BarChart({
               background:
                 i === data.length - 1
                   ? accent
-                  : "rgba(122,158,27,0.30)",
+                  : "rgba(98,131,9,0.30)",
               minHeight: 4,
             }}
           />
@@ -100,7 +100,7 @@ export function BarChart({
   );
 }
 
-const HEAT = ["#e9edf2", "#eef7cf", "#b9dd57", "#7a9e1b"];
+const HEAT = ["#eceae0", "#eef7cf", "#b9dd57", "#628309"];
 
 /** 90-day consistency grid (PRD §16). Column-major = calendar weeks. */
 export function Heatmap({

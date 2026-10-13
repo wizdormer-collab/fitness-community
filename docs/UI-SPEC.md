@@ -9,46 +9,54 @@ Tailwind 4 defaults with the tokens below.
 
 Defined in `src/app/globals.css` under `@theme`. `color-scheme: light`.
 
-### Ink (neutral) — light canvas
+### Ink (neutral) — deep navy text on a warm cream canvas
 
 Reading direction: **50 = darkest** (primary text) → **950 = lightest** (page).
+Navy-tinted at the dark end, cream-tinted at the light end, so nothing reads as
+a cold grey next to `#101F2D` / `#F8F7F1`.
 
 | Token | Value | Use |
 |---|---|---|
-| `ink-50` | `#0b0d0f` | Headings, primary text, `onvolt`-equivalent dark |
-| `ink-100` | `#171b20` | Body text, input values |
-| `ink-200` | `#2f353d` | Strong secondary text |
-| `ink-300` | `#4c5460` | Secondary text on white |
-| `ink-400` | `#626a77` | Tertiary text, section labels |
-| `ink-500` | `#7b8391` | Muted/again hints, meta lines |
-| `ink-600` | `#949ca8` | Placeholders, disabled |
-| `ink-700` | `#e1e5eb` | **Hairline** — every divider and border |
-| `ink-750` | `#e7ebf0` | Subtle chips, inactive tile fills |
+| `ink-50` | `#101f2d` | Headings, primary text (16.6:1 on white) |
+| `ink-100` | `#1b2c3b` | Body text, input values |
+| `ink-200` | `#2e4256` | Strong secondary text |
+| `ink-300` | `#455a6e` | Secondary text on white (7.1:1) |
+| `ink-400` | `#5b7085` | Tertiary text, section labels (5.1:1) |
+| `ink-500` | `#64788d` | Muted hints, meta lines (4.6:1 — still AA) |
+| `ink-600` | `#7b8ea1` | Placeholders, chevrons, hover borders |
+| `ink-700` | `#dedacc` | **Hairline** — every divider and border |
+| `ink-750` | `#edeae0` | Subtle chips, inactive tile fills |
 | `ink-800` | `#ffffff` | **Card surface** |
-| `ink-850` | `#eef1f5` | Inset field surface (inputs on cards) |
+| `ink-850` | `#f1efe7` | Inset field surface, sidebar rail |
 | `ink-900` | `#ffffff` | Raised surface |
-| `ink-950` | `#f2f4f7` | **Page canvas** |
+| `ink-950` | `#f8f7f1` | **Page canvas** (`#F8F7F1`) |
+
+White cards sit on cream with only ~1.07:1 of fill contrast, so the separation
+is carried by `card-shine` (a low, navy-tinted shadow) plus the `ink-700`
+hairline rather than by colour.
 
 ### Volt (accent) — split by role, not hue
 
 | Token | Value | Role |
 |---|---|---|
-| `volt-100/200/300` | `#fbffeb` `#f3ffcf` `#e6ff9b` | Tints, gradient stops |
-| `volt-400` | `#d7ff3e` | **Fill** — buttons, active pills, dots. Always with `text-onvolt` |
-| `volt-500` | `#c2ef1a` | Fill hover |
-| `volt-600` | `#7a9e1b` | **Graphic** — bars, rings, chart lines, callout rules (3.1:1) |
-| `volt-700` | `#5f7a00` | **Text accent** on white (4.9:1) |
-| `volt-800` | `#475c00` | Text on a `volt-400/[0.12]` tint |
+| `volt-100/200/300` | `#f4fee4` `#e9fdcb` `#d5fa9e` | Tints, gradient stops |
+| `volt-400` | `#b8f34a` | **Fill** — buttons, active pills, dots. Always with `text-onvolt` |
+| `volt-500` | `#a6e02e` | Fill hover |
+| `volt-600` | `#628309` | **Graphic** — bars, rings, chart lines, callout rules (4.4:1) |
+| `volt-700` | `#4e6b0a` | **Text accent** on white (6.1:1) / cream (5.7:1) |
+| `volt-800` | `#3b520a` | Text on a `volt-400/[0.13]` tint |
 
-Rule: `#d7ff3e` as *text on white* is 1.2:1 and must never be used. Reach for
-`volt-700` instead; reach for `volt-600` when the element is a stroke or a bar.
+Rule: `#b8f34a` as *text on white* is 1.3:1 and must never be used. Reach for
+`volt-700` instead; reach for `volt-600` when the element is a stroke or a bar —
+it also has to separate from an `ink-700` track, which is why it is the darkest
+of the three graphic steps.
 
 ### On-accent + scrim
 
 | Token | Value | Use |
 |---|---|---|
-| `onvolt` | `#0b0d0f` | Text/icon on a `volt-400` fill |
-| `scrim` | `#0b0d0f` | Dark overlays — sheet backdrop, scanning toast |
+| `onvolt` | `#101f2d` | Text/icon on a `volt-400` fill (12.6:1 — past AAA) |
+| `scrim` | `#101f2d` | Dark overlays — sheet backdrop, scanning toast |
 
 ### Semantic
 
@@ -93,8 +101,11 @@ Inter for everything (`--font-inter` → `--font-display` / `--font-body`).
   hairline is wanted underneath.
 - Card radius `rounded-2xl`, hero/photo radius `rounded-2xl`, tiles `rounded-xl`,
   chips/pills `rounded-lg`, badges/buttons `rounded-full` / `rounded-lg`.
-- One shadow only: `card-shine` (`0 1px 2px rgba(11,13,15,.04)`). No stacked
-  shadows, no glows on white.
+- One shadow only: `card-shine`
+  (`0 1px 2px rgba(16,31,45,.05), 0 12px 28px -20px rgba(16,31,45,.28)`). No
+  stacked shadows, no glows on white. It is deliberately stronger than a
+  typical hairline lift: white cards on `#F8F7F1` differ by ~1.07:1, so the
+  shadow is what makes the card read as a separate plane.
 
 ### Box discipline
 
@@ -131,7 +142,7 @@ in one rounded white group. `ListRow` accepts `href` (renders a link),
 - `Pill` — quiet static inline label on `ink-750`.
 - `Tag` — micro static label for footnotes/eyebrows.
 - `Chip` — interactive selectable. `size="sm" | "md"`, `selected` → volt fill +
-  `text-onvolt` + `shadow-[0_0_0_1px_rgba(215,255,62,0.35)]`.
+  `text-onvolt` + `shadow-[0_0_0_1px_rgba(184,243,74,0.45)]`.
 
 ### Button
 `primary` = volt-400 fill + `text-onvolt`; `secondary` = white + hairline;
@@ -167,7 +178,7 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | Screen | Framed objects |
 |---|---|
 | Welcome | 0 (photo hero + divided `<ul>`) |
-| Home | 1 (today's session) |
+| Home | 3 (week, today's session, community) + 1 `List` surface (nearby) |
 | Progress | 2 (weekly volume, consistency) |
 | Sessions | 0 (one `List` group) |
 | Session detail | 2 (join CTA, chat) + photo hero |
@@ -219,7 +230,28 @@ entrance animations are opacity+transform only.
 
 - Focus: `2px solid volt-700`, offset `2px` (global `:focus-visible`).
 - All icon-only controls carry `aria-label`; toggles carry `aria-pressed`.
-- Contrast: body text ≥ 4.5:1 on white; accents use `volt-700` (4.9:1),
-  `ok-400` (4.9:1), `info-400` (5.9:1).
+- Contrast: body text ≥ 4.5:1 on white **and** on cream; accents use
+  `volt-700` (6.1:1 white / 5.7:1 cream), `ok-400` (5.5:1), `info-400` (5.5:1).
+  `onvolt` on a lime fill is 12.6:1.
 - Interactive rows are real `<button>`/`<a>` elements via `ListRow`/`Chip`.
 - Minimum text size 11px; inputs are 15px to avoid iOS zoom.
+
+---
+
+## 9. Responsive
+
+`lg` (1024px) is the only custom breakpoint — everything else is a Tailwind
+default. Below `lg` every screen stays a single centred phone column
+(`max-w-[440px]`); tablets included.
+
+| | `< lg` | `≥ lg` |
+|---|---|---|
+| Navigation | `AppNav` — fixed bottom tab bar + floating log action | `AppSidebar` — fixed 248px left rail (264px at `xl`), brand + Log workout + tabs + Notifications |
+| Content frame | `max-w-[440px]`, centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
+| Home | single column | explicit 12-col placement: personal rail (4) left, live feed (8) right |
+| Onboarding | one column | brand rail left + form card right |
+
+The desktop layouts are built with `lg:col-start/row-start` on the **same
+DOM** as mobile, so no section is rendered twice and the mobile reading order
+is untouched. Top/bottom clearance for the fixed tab bar lives on `<main>`
+alone — do not re-add it to the wrapper, or the two paddings stack.

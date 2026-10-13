@@ -193,7 +193,7 @@ const BADGE_TONES: Record<NonNullable<BadgeProps["tone"]>, string> = {
   warn: "bg-warn-500/15 text-warn-400 ring-warn-500/35",
   bad: "bg-bad-500/15 text-bad-400 ring-bad-500/35",
   info: "bg-info-500/15 text-info-400 ring-info-500/35",
-  muted: "bg-ink-750 text-ink-400 ring-ink-600/40",
+  muted: "bg-ink-750 text-ink-300 ring-ink-600/40",
 };
 
 export function Badge({ children, tone = "muted", className }: BadgeProps) {

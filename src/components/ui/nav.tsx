@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/controls";
+import { usePrototype } from "@/lib/prototype-state";
+import { NOTIFICATIONS } from "@/lib/mock-data";
 
 const ICONS = {
   home: (
@@ -52,10 +55,109 @@ const TABS: {
   { href: "/app/profile", label: "Profile", key: "profile" },
 ];
 
+/**
+ * Desktop sidebar — replaces the bottom tab bar at lg and up. Same tabs, same
+ * active logic, but laid out as a left rail with the brand and the Log action
+ * promoted to the top so the phone's floating button has a desktop home.
+ */
+export function AppSidebar() {
+  const pathname = usePathname();
+  const { isNotificationRead } = usePrototype();
+  const unread = NOTIFICATIONS.filter((n) => !n.read && !isNotificationRead(n.id)).length;
+  return (
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col border-r border-ink-700 bg-ink-850 px-4 py-6 lg:flex xl:w-[264px]">
+      <Link href="/app" className="flex items-center gap-2.5 px-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-volt-400 text-onvolt">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M13.2 2.4L4.8 13.6h5.6L9.4 21.6l8.8-11.6h-5.6z" />
+          </svg>
+        </span>
+        <span className="font-display text-[15px] font-extrabold tracking-tight text-ink-50">
+          Show Up
+        </span>
+      </Link>
+
+      <Button size="sm" href="/app/log" className="mt-6 w-full">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+        </svg>
+        Log workout
+      </Button>
+
+      <nav className="mt-7 flex flex-col gap-1" aria-label="Main">
+        {TABS.map((tab) => {
+          const active = tab.exact
+            ? pathname === tab.href
+            : pathname === tab.href || pathname.startsWith(tab.href + "/");
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
+                active
+                  ? "bg-volt-400/25 text-volt-800"
+                  : "text-ink-400 hover:bg-ink-750 hover:text-ink-100",
+              )}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={active ? 2.1 : 1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                {ICONS[tab.key]}
+              </svg>
+              {tab.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Notifications lives here too: the bottom tab bar has no room for it and
+          the bell only exists on Home, so desktop needs its own way in. */}
+      <div className="mt-auto pt-6">
+        <Link
+          href="/app/notifications"
+          aria-current={pathname === "/app/notifications" ? "page" : undefined}
+          className={cn(
+            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
+            pathname === "/app/notifications"
+              ? "bg-volt-400/25 text-volt-800"
+              : "text-ink-400 hover:bg-ink-750 hover:text-ink-100",
+          )}
+        >
+          <span className="relative">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 8.5a6 6 0 1 0-12 0c0 5.2-2 7-2 7h16s-2-1.8-2-7" />
+              <path d="M13.7 19.2a2 2 0 0 1-3.4 0" />
+            </svg>
+            {unread > 0 && (
+              <span className="num absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-volt-400 px-1 text-[10px] font-bold text-onvolt">
+                {unread}
+              </span>
+            )}
+          </span>
+          Notifications
+        </Link>
+        <p className="px-3 pt-4 text-[11px] leading-relaxed text-ink-600">
+          Prototype data · Lagos MVP · v0.1
+        </p>
+      </div>
+    </aside>
+  );
+}
+
 export function AppNav({ logHref = "/app/log" }: { logHref?: string }) {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-700 bg-white/95 backdrop-blur-xl shadow-[0_-4px_20px_-12px_rgba(11,13,15,0.3)]">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-700 bg-white/95 backdrop-blur-xl shadow-[0_-4px_20px_-12px_rgba(16,31,45,0.3)] lg:hidden">
       <div className="mx-auto flex max-w-md items-stretch px-2 pb-[env(safe-area-inset-bottom)]">
         {TABS.map((tab) => {
           const active = tab.exact
@@ -106,7 +208,7 @@ export function AppNav({ logHref = "/app/log" }: { logHref?: string }) {
       <Link
         href={logHref}
         aria-label="Log a workout"
-        className="absolute -top-7 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-volt-400 text-onvolt ring-4 ring-white shadow-[0_10px_24px_-8px_rgba(11,13,15,0.4)] transition active:scale-95 hover:bg-volt-500"
+        className="absolute -top-7 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-volt-400 text-onvolt ring-4 ring-white shadow-[0_10px_24px_-8px_rgba(16,31,45,0.4)] transition active:scale-95 hover:bg-volt-500"
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path

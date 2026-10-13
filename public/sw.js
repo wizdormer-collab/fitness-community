@@ -7,7 +7,7 @@
  * Offline navigations fall back to the prerendered /offline shell.
  */
 
-const CACHE = "showup-v1";
+const CACHE = "showup-v2";
 const OFFLINE_URL = "/offline";
 
 const PRECACHE = ["/", OFFLINE_URL, "/manifest.webmanifest", "/icon.svg"];

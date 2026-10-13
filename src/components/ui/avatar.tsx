@@ -2,14 +2,14 @@ import { cn } from "@/lib/cn";
 
 // Initials + gradient — keeps the prototype free of image assets.
 const TONES = [
-  { g: "linear-gradient(135deg,#d7ff3e,#a3d90a)", fg: "#0a0b0d" },
+  { g: "linear-gradient(135deg,#b8f34a,#96cc25)", fg: "#101f2d" },
   { g: "linear-gradient(135deg,#5b8cff,#3b6be0)", fg: "#ffffff" },
   { g: "linear-gradient(135deg,#ff7a59,#e0492a)", fg: "#ffffff" },
   { g: "linear-gradient(135deg,#c084fc,#8b3ff0)", fg: "#ffffff" },
-  { g: "linear-gradient(135deg,#3ddc84,#12a86b)", fg: "#0a0b0d" },
-  { g: "linear-gradient(135deg,#ffd166,#f59e0b)", fg: "#0a0b0d" },
+  { g: "linear-gradient(135deg,#3ddc84,#12a86b)", fg: "#101f2d" },
+  { g: "linear-gradient(135deg,#ffd166,#f59e0b)", fg: "#101f2d" },
   { g: "linear-gradient(135deg,#f472b6,#db2777)", fg: "#ffffff" },
-  { g: "linear-gradient(135deg,#67e8f9,#0891b2)", fg: "#0a0b0d" },
+  { g: "linear-gradient(135deg,#67e8f9,#0891b2)", fg: "#101f2d" },
 ] as const;
 
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";

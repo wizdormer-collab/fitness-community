@@ -43,7 +43,7 @@ export function BottomSheet({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto thin-scrollbar animate-sheet-up rounded-t-3xl border-t border-ink-700 bg-ink-800 shadow-[0_-12px_40px_-16px_rgba(11,13,15,0.35)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-3",
+          "relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto thin-scrollbar animate-sheet-up rounded-t-3xl border-t border-ink-700 bg-ink-800 shadow-[0_-12px_40px_-16px_rgba(16,31,45,0.35)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-3",
           className,
         )}
       >
