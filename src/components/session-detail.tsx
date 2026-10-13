@@ -17,6 +17,7 @@ export function SessionDetail({ id }: { id: string }) {
   const { isSessionJoined, toggleSession, isCheckedIn, checkIn } =
     usePrototype();
   const [message, setMessage] = useState("");
+  const [inviteLabel, setInviteLabel] = useState("Invite friends");
   const [messages, setMessages] = useState([
     { id: "m1", from: "Ngozi Eze", text: "Rack 3 is reserved for us.", ago: "20m" },
     { id: "m2", from: "Tobi Alabi", text: "Bringing chalk, someone bring a belt.", ago: "12m" },
@@ -38,6 +39,33 @@ export function SessionDetail({ id }: { id: string }) {
     if (!text) return;
     setMessages((m) => [...m, { id: `m${Date.now()}`, from: "You", text, ago: "now" }]);
     setMessage("");
+  };
+
+  /**
+   * "Invite friends" used to be an href="#" placeholder. Share sheet where the
+   * platform has one, clipboard otherwise, and the label itself carries the
+   * confirmation — no toast system to reach for.
+   */
+  const invite = async () => {
+    const flash = (label: string) => {
+      setInviteLabel(label);
+      window.setTimeout(() => setInviteLabel("Invite friends"), 1800);
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: document.title, url: window.location.href });
+        return;
+      } catch (err) {
+        if ((err as { name?: string }).name === "AbortError") return; // sheet dismissed
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      flash("Link copied");
+    } catch {
+      flash("Couldn't copy");
+    }
   };
 
   return (
@@ -152,7 +180,7 @@ export function SessionDetail({ id }: { id: string }) {
         <SectionHeader
           label="Who's coming"
           hint={`${s.attendeeIds.length} confirmed`}
-          action={{ label: "Invite friends", href: "#" }}
+          action={{ label: inviteLabel, onClick: invite }}
         />
         <AvatarStack
           people={s.attendeeIds.map((aid) => {

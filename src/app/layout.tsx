@@ -35,7 +35,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  maximumScale: 1,
+  // Deliberately no maximumScale: pinching to zoom must stay available
+  // (WCAG 1.4.4). Input sizing below covers the focus-zoom it used to hide.
 };
 
 export default function RootLayout({

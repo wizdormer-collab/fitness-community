@@ -274,3 +274,20 @@ select {
   background-size: 200% 100%;
   animation: var(--animate-shimmer);
 }
+
+/* ---- Touch text sizing ----
+   layout.tsx deliberately does not set viewport `maximumScale`, because
+   blocking pinch-zoom fails WCAG 1.4.4. That setting had been masking a
+   second behaviour: mobile browsers zoom the viewport into any focused input
+   set below 16px. Holding inputs at 16px across the phone/tablet column (below
+   `lg`) keeps focus from yanking the page around, while desktop keeps its
+   tighter 14–15px sizing where no such zoom exists.
+   Left outside any @layer on purpose — unlayered rules outrank the `text-sm`
+   utilities Tailwind emits into @layer utilities, which is the whole point. */
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

@@ -242,7 +242,14 @@ entrance animations are opacity+transform only.
   `volt-700` (6.1:1 white / 5.7:1 cream), `ok-400` (5.5:1), `info-400` (5.5:1).
   `onvolt` on a lime fill is 12.6:1.
 - Interactive rows are real `<button>`/`<a>` elements via `ListRow`/`Chip`.
-- Minimum text size 11px; inputs are 15px to avoid iOS zoom.
+- Minimum text size 11px.
+- The viewport sets no `maximumScale` — pinch-zoom must stay available
+  (WCAG 1.4.4). Mobile browsers zoom into a focused input below 16px, so
+  `globals.css` holds inputs at 16px below `lg`. Desktop keeps 14–15px,
+  where no focus zoom exists. *(The spec previously claimed 15px inputs
+  avoided iOS zoom; the threshold is 16px, so that never held.)*
+- `SectionHeader` actions take either `href` (navigation) or `onClick`
+  (command), never both — the union makes `href: "#"` a type error.
 
 ---
 

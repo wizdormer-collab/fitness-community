@@ -138,7 +138,7 @@ export default function LogWorkout() {
         <section className="mb-7">
           <SectionHeader
             label="Exercises"
-            action={{ label: "+ Add", href: "#" }}
+            action={{ label: "+ Add", onClick: addRow }}
           />
           <List variant="surface">
             {rows.map((r) => (

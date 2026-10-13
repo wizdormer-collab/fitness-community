@@ -33,12 +33,24 @@ export function Card({
   );
 }
 
+/**
+ * An action is either a navigation (href) or a local command (onClick) —
+ * never both. The `never` fields make `href: "#"` placeholders a type error
+ * rather than something a reviewer has to spot.
+ */
+type SectionAction =
+  | { label: string; href: string; onClick?: never }
+  | { label: string; onClick: () => void; href?: never };
+
 interface SectionHeaderProps {
   label: string;
   hint?: string;
-  action?: { label: string; href: string };
+  action?: SectionAction;
   className?: string;
 }
+
+const actionClass =
+  "shrink-0 text-[13px] font-semibold text-volt-700 transition hover:text-volt-800";
 
 export function SectionHeader({
   label,
@@ -54,14 +66,20 @@ export function SectionHeader({
         </h2>
         {hint && <p className="mt-1 text-[13px] text-ink-500">{hint}</p>}
       </div>
-      {action && (
-        <Link
-          href={action.href}
-          className="shrink-0 text-[13px] font-semibold text-volt-700 transition hover:text-volt-800"
-        >
-          {action.label}
-        </Link>
-      )}
+      {action &&
+        (action.onClick ? (
+          <button
+            type="button"
+            onClick={action.onClick}
+            className={cn(actionClass, "cursor-pointer")}
+          >
+            {action.label}
+          </button>
+        ) : (
+          <Link href={action.href} className={actionClass}>
+            {action.label}
+          </Link>
+        ))}
     </div>
   );
 }
