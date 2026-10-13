@@ -264,7 +264,7 @@ default. Below `lg` every screen stays a single centred phone column
 | Navigation | `AppNav` — fixed bottom tab bar + floating log action | `AppSidebar` — fixed 248px left rail (264px at `xl`), brand + Log workout + tabs + Notifications |
 | Content frame | `max-w-[440px]`, centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
 | Home | single column | explicit 12-col placement: personal rail (4) left, live feed (8) right |
-| Discover | single-column result cards, chip rail scrolls edge-to-edge | same DOM, `lg:grid-cols-2`; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
+| Discover | single-column result cards, chip rail and the "Recommended" row scroll edge-to-edge | same DOM, `lg:grid-cols-2` for results and `lg:grid-cols-3` for the Recommended row; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
 | Onboarding | one column | brand rail left + form card right |
 
 The desktop layouts are built with `lg:col-start/row-start` on the **same

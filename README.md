@@ -93,12 +93,25 @@ mockup, so the redesign systematically collapsed them. Discover is the one
 deliberate exception: a browse grid of repeated result cards *is* the content,
 not competing framed sections (`docs/UI-SPEC.md` §3).
 
-**Discover data.** `discoverItems()` in `selectors.ts` returns the seeded
-`DISCOVER_ITEMS` plus the `TRAINERS` collection mapped into the listing shape.
-Trainers are deliberately not copied into the seed — that would give every
-name, area and rating two homes to drift apart. Mapping at read time is what
-makes the "Trainers" category and the trainer detail sheet resolve; the
-category shipped with zero rows, so both were dead ends.
+**Discover data.** `buildDiscoverResults()` in `selectors.ts` is the single
+entry point: it returns the seeded `DISCOVER_ITEMS` (communities expanded into
+their full `COMMUNITIES` record so a card can show a member count and tagline),
+the upcoming `SESSIONS`, and the `TRAINERS` collection mapped into the listing
+shape. Nothing is duplicated into the seed — a copy would give every name,
+area and rating two homes to drift apart. Mapping at read time is what makes
+the "Trainers" category and the trainer detail sheet resolve; the category
+shipped with zero rows, so both were dead ends.
+
+A session has no category of its own (the app has no "sessions" category), so
+`SESSION_CATEGORY` files it under the category a browser would look in:
+venues stay in **Gyms**, instructor-led work goes to **Classes**, group runs to
+**Run clubs**, courts/pools/roads to **Sports**. It is a
+`Record<ActivityId, …>`, so a new activity cannot ship uncategorised.
+
+Each result carries a pre-folded `search` haystack, which is why the filter is
+one `.includes()` across three data shapes. The screen loads the module behind
+a dynamic import — the loading and error states are real conditions (a chunk
+fetch can fail offline or across a deploy), not simulated timers.
 
 **Icons.** `Glyph` is keyed by **domain id** (`ActivityId`, `FitnessGoalId`,
 `DiscoverCategoryId`, `TimeSlotId`, notification kind, venue icon) — never by
