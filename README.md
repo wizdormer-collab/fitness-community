@@ -105,6 +105,17 @@ is marked `aria-live`, so it is the actual result of your last action rather
 than a scripted success message. Check-in stays gated on membership and hands
 off to the venue-code flow at `/app/checkin` — there is no shortcut around it.
 
+**Progress data.** Every figure on `/app/progress` is derived at render time
+from `PROGRESS` plus the live store — none of it is a typed-in literal. Distance
+is the sum of `distanceTrend` (229 km over the 12 weeks actually charted), the
+peak caption and the "N weeks ago" axis label come off the same arrays, "days
+trained" counts the heatmap's non-rest cells, and the activity split folds
+`state.extraWorkouts` into the seeded counts so logging a workout moves the
+split and the Workouts tile together. Weekly-goal copy and the commitment line
+are derived and clamped: overshooting the target reads "Weekly goal met", never
+"-1 to go". The charts are `aria-hidden` decoration over real numbers, so each
+one ships a `.sr-only` text equivalent carrying those numbers.
+
 **Discover data.** `buildDiscoverResults()` in `selectors.ts` is the single
 entry point: it returns the seeded `DISCOVER_ITEMS` (communities expanded into
 their full `COMMUNITIES` record so a card can show a member count and tagline),

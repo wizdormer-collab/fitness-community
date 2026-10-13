@@ -267,6 +267,7 @@ default. Below `lg` every screen stays a single centred phone column
 | Discover | single-column result cards, chip rail and the "Recommended" row scroll edge-to-edge | same DOM, `lg:grid-cols-2` for results and `lg:grid-cols-3` for the Recommended row; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
 | Sessions | stacked session cards, segmented filter full width | same DOM, `lg:grid-cols-2`; segmented filter capped at `lg:max-w-lg` so it does not read as a banner |
 | Session detail | one column: hero → booking panel → organiser → about → attendees → chat | same DOM, `lg:max-w-4xl` with `lg:grid-cols-[minmax(0,1fr)_320px]`; the booking panel is first in the DOM (so the join action stays directly under the hero on mobile) and ordered to the right column at `lg`, where it is sticky |
+| Progress | 2-col stat grid, everything else stacked | same DOM, stats `lg:grid-cols-4`; the two chart bands side by side (`lg:grid-cols-2`); records and recent history side by side (`lg:grid-cols-2`) |
 | Onboarding | one column | brand rail left + form card right |
 
 The desktop layouts are built with `lg:col-start/row-start` on the **same

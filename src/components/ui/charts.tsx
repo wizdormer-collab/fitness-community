@@ -75,27 +75,33 @@ export function BarChart({
 }) {
   const max = Math.max(...data, 1);
   return (
-    <div
-      className={cn("flex items-end gap-1.5", className)}
-      style={{ height }}
-      aria-hidden
-    >
-      {data.map((v, i) => (
-        <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
-          <div
-            className="w-full rounded-t-md transition-all duration-500"
-            style={{
-              height: `${(v / max) * 100}%`,
-              background:
-                i === data.length - 1
-                  ? accent
-                  : "rgba(98,131,9,0.30)",
-              minHeight: 4,
-            }}
-          />
-          <span className="num text-[11px] text-ink-500">{v}</span>
-        </div>
-      ))}
+    <div className={cn("block", className)} aria-hidden>
+      {/* The column must have a definite height or a `height: %` child has no
+          reference and collapses to its minHeight — which is what happened when
+          these were `items-end` columns each holding its own label. */}
+      <div className="flex items-end gap-1.5" style={{ height }}>
+        {data.map((v, i) => (
+          <div key={i} className="flex h-full flex-1 flex-col justify-end">
+            <div
+              className="w-full rounded-t-md transition-all duration-500"
+              style={{
+                height: `${(v / max) * 100}%`,
+                background:
+                  i === data.length - 1 ? accent : "rgba(98,131,9,0.30)",
+                minHeight: 4,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      {/* Labels live outside the bar row so they can't eat into its height. */}
+      <div className="mt-1.5 flex gap-1.5">
+        {data.map((v, i) => (
+          <span key={i} className="num flex-1 text-center text-[11px] text-ink-500">
+            {v}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
