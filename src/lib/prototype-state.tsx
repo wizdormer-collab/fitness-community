@@ -32,7 +32,7 @@ import type {
 // every page behind a boot splash.
 // ============================================================
 
-const STORAGE_KEY = "fitproto.v1";
+export const STORAGE_KEY = "fitproto.v1";
 
 export interface DraftProfile {
   name: string;
@@ -59,6 +59,8 @@ interface PersistedState {
   totalWorkouts: number;
   personalRecords: number;
   trainingMinutes: number;
+  /** Profile → Settings. A saved preference, not a local-only toggle. */
+  sessionReminders: boolean;
 }
 
 const INITIAL: PersistedState = {
@@ -75,6 +77,7 @@ const INITIAL: PersistedState = {
   totalWorkouts: PROGRESS.workouts,
   personalRecords: PROGRESS.personalRecords,
   trainingMinutes: PROGRESS.trainingHours * 60,
+  sessionReminders: true,
 };
 
 const DEFAULT_PROFILE: DraftProfile = {
@@ -219,6 +222,10 @@ function markAllNotificationsRead() {
   );
 }
 
+function setSessionReminders(on: boolean) {
+  commit((s) => ({ ...s, sessionReminders: on }));
+}
+
 function addWorkout(w: Omit<Workout, "id" | "userId">) {
   commit((s) => {
     const workout: Workout = {
@@ -258,6 +265,7 @@ interface PrototypeStore {
   isNotificationRead: (id: string) => boolean;
   markAllNotificationsRead: () => void;
   addWorkout: (w: Omit<Workout, "id" | "userId">) => void;
+  setSessionReminders: (on: boolean) => void;
 }
 
 const StoreContext = createContext<PrototypeStore | null>(null);
@@ -285,6 +293,7 @@ export function PrototypeProvider({ children }: { children: React.ReactNode }) {
         INITIAL.readNotifications.includes(id),
       markAllNotificationsRead,
       addWorkout,
+      setSessionReminders,
     }),
     [state],
   );

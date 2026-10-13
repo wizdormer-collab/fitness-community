@@ -116,6 +116,17 @@ are derived and clamped: overshooting the target reads "Weekly goal met", never
 "-1 to go". The charts are `aria-hidden` decoration over real numbers, so each
 one ships a `.sr-only` text equivalent carrying those numbers.
 
+**Profile saves.** `setDraft()` in `prototype-state.tsx` is the one save path —
+the Profile edit sheet and all six onboarding screens write through it, so a
+name or home gym set on either side is the same value. The sheet validates
+before writing (name 2–40, home gym ≤60), then **reads the write back out of
+`localStorage`** and reports the observed result: "Profile saved", or a warning
+that the device is blocking storage and the change is session-only. There is no
+sign-in, session or sign-out anywhere in the app; `Reset prototype data` keeps
+its `window.confirm` gate because that is the only confirmation flow that
+exists. Settings must persist — a toggle that reverts on reload is not a
+setting, which is why `sessionReminders` lives in `PersistedState`.
+
 **Discover data.** `buildDiscoverResults()` in `selectors.ts` is the single
 entry point: it returns the seeded `DISCOVER_ITEMS` (communities expanded into
 their full `COMMUNITIES` record so a card can show a member count and tagline),

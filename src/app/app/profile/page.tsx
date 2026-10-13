@@ -10,7 +10,8 @@ import { BottomSheet } from "@/components/ui/sheet";
 import { Glyph } from "@/components/ui/glyph";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePrototype } from "@/lib/prototype-state";
+import { cn } from "@/lib/cn";
+import { usePrototype, STORAGE_KEY } from "@/lib/prototype-state";
 import { COMMUNITIES, ME, SESSIONS } from "@/lib/mock-data";
 import {
   ACTIVITIES,
@@ -26,12 +27,35 @@ const labelOf = (
   ids: string[],
 ) => ids.map((id) => list.find((x) => x.id === id)?.label).filter(Boolean);
 
+/** Bounds mirror what onboarding already accepts — nothing narrower. */
+const NAME_MIN = 2;
+const NAME_MAX = 40;
+const GYM_MAX = 60;
+
+type Status = { kind: "ok" | "warn" | "error"; msg: string } | null;
+
+const STATUS_TONE = {
+  ok: "bg-volt-400/10 text-volt-800 ring-1 ring-inset ring-volt-600/25",
+  warn: "bg-warn-500/10 text-warn-600 ring-1 ring-inset ring-warn-500/30",
+  error: "bg-bad-500/10 text-bad-600 ring-1 ring-inset ring-bad-500/30",
+} as const;
+
 export default function Profile() {
   const router = useRouter();
-  const { profile, state, reset, isCommunityJoined, isSessionJoined } =
-    usePrototype();
+  const {
+    profile,
+    state,
+    reset,
+    setDraft,
+    setSessionReminders,
+    isCommunityJoined,
+    isSessionJoined,
+  } = usePrototype();
+
   const [editing, setEditing] = useState(false);
-  const [notify, setNotify] = useState(true);
+  const [name, setName] = useState(profile.name);
+  const [gym, setGym] = useState(profile.currentGym);
+  const [status, setStatus] = useState<Status>(null);
 
   const goals = labelOf(FITNESS_GOALS, profile.goals);
   const activities = labelOf(ACTIVITIES, profile.activities);
@@ -39,6 +63,69 @@ export default function Profile() {
   const level = FITNESS_LEVELS.find((l) => l.id === profile.fitnessLevel);
   const joined = COMMUNITIES.filter((c) => isCommunityJoined(c.id));
   const joinedSessions = SESSIONS.filter((s) => isSessionJoined(s.id));
+
+  function openEditor() {
+    // Seed from the store every time so a cancelled edit never leaves
+    // stale text in the fields.
+    setName(profile.name);
+    setGym(profile.currentGym);
+    setStatus(null);
+    setEditing(true);
+  }
+
+  /**
+   * Save through the same `setDraft` path onboarding uses, then read the
+   * write back out of storage. Success is reported from the *observed*
+   * result — never assumed.
+   */
+  function save() {
+    const n = name.trim();
+    const g = gym.trim();
+
+    if (n.length < NAME_MIN) {
+      setStatus({ kind: "error", msg: `Enter a display name of at least ${NAME_MIN} characters.` });
+      return;
+    }
+    if (n.length > NAME_MAX) {
+      setStatus({ kind: "error", msg: `Display names are limited to ${NAME_MAX} characters.` });
+      return;
+    }
+    if (g.length > GYM_MAX) {
+      setStatus({ kind: "error", msg: `Home gym is limited to ${GYM_MAX} characters.` });
+      return;
+    }
+
+    try {
+      setDraft({ name: n, currentGym: g });
+    } catch {
+      setStatus({
+        kind: "error",
+        msg: "Couldn't save your changes — nothing was applied. Please try again.",
+      });
+      return;
+    }
+
+    // The store always applies in memory; what can fail is the write. Check it.
+    let persisted = false;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      persisted =
+        !!raw && (JSON.parse(raw) as { draft?: { name?: string } }).draft?.name === n;
+    } catch {
+      persisted = false;
+    }
+
+    setStatus(
+      persisted
+        ? { kind: "ok", msg: "Profile saved." }
+        : {
+            kind: "warn",
+            msg: "Saved for this session — this device is blocking local storage, so it won't survive a reload.",
+          },
+    );
+  }
+
+  const applied = status?.kind === "ok" || status?.kind === "warn";
 
   return (
     <div>
@@ -50,7 +137,7 @@ export default function Profile() {
         right={
           <button
             type="button"
-            onClick={() => setEditing(true)}
+            onClick={openEditor}
             className="rounded-lg border border-ink-600 px-2.5 py-1.5 text-[11px] font-semibold text-ink-200 transition hover:border-volt-400 hover:text-volt-700"
           >
             Edit
@@ -58,227 +145,241 @@ export default function Profile() {
         }
       />
 
-      {/* Identity — unframed */}
-      <Band divided className="mb-6">
-        <div className="flex items-start gap-4">
-          <Avatar initials={ME.initials} tone={ME.tone} size="xl" />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-display text-xl font-bold text-ink-50">
-                {profile.name || ME.name}
-              </h2>
-              {ME.verified && <Badge tone="ok">Verified</Badge>}
-            </div>
-            <p className="num mt-0.5 text-xs text-ink-500">{ME.handle}</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-ink-300">
-              {areaLabel(profile.area)} · {level?.label} · {ME.age}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <StreakFlame days={state.streak} size="sm" />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5 grid grid-cols-3 gap-4">
-          <StatTile label="Workouts" value={grouped(state.totalWorkouts)} icon="gym" />
-          <StatTile label="Streak" value={state.streak} unit="d" icon="flame" />
-          <StatTile label="PRs" value={state.personalRecords} icon="trophy" accent />
-        </div>
-      </Band>
-
-      {/* Bio */}
-      {ME.bio && (
-        <Band divided className="mb-6">
-          <SectionHeader label="About" />
-          <p className="text-sm leading-relaxed text-ink-300">{ME.bio}</p>
-        </Band>
-      )}
-
-      {/* Matching inputs (PRD §7) — one list, not a box of dividers */}
-      <section className="mb-6">
-        <SectionHeader
-          label="Matched on"
-          hint="Edited during onboarding"
-          action={{ label: "Re-do setup", href: "/onboarding/goals" }}
-        />
-        <List>
-          <ListRow className="px-0 py-4">
-            <Field label="Goals">
-              {goals.map((g) => (
-                <Pill key={g} className="mr-1.5 mb-1.5 inline-flex">
-                  {g}
-                </Pill>
-              ))}
-            </Field>
-          </ListRow>
-          <ListRow className="px-0 py-4">
-            <Field label="Activities">
-              {activities.map((a) => (
-                <Pill key={a} className="mr-1.5 mb-1.5 inline-flex">
-                  {a}
-                </Pill>
-              ))}
-            </Field>
-          </ListRow>
-          <ListRow className="px-0 py-4">
-            <Field label="Training days">
-              <div className="flex flex-wrap gap-1.5">
-                {WEEKDAYS.map((d) => (
-                  <span
-                    key={d.id}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-bold ${
-                      profile.preferredDays.includes(d.id)
-                        ? "bg-volt-400 text-onvolt"
-                        : "bg-ink-750 text-ink-500"
-                    }`}
-                  >
-                    {d.label}
-                  </span>
-                ))}
+      {/* Desktop: profile on the left, activity and settings on the right,
+          so settings aren't pushed below a full-width stack. Below lg the
+          wrappers are plain blocks and the mobile reading order is unchanged. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
+        <div>
+          {/* Identity — unframed, deliberately compact (lg = 64px, not xl = 96px) */}
+          <Band divided className="mb-6">
+            <div className="flex items-start gap-4">
+              <Avatar initials={ME.initials} tone={ME.tone} size="lg" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-display text-xl font-bold text-ink-50">
+                    {profile.name || ME.name}
+                  </h2>
+                  {ME.verified && <Badge tone="ok">Verified</Badge>}
+                </div>
+                <p className="num mt-0.5 text-xs text-ink-500">{ME.handle}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-ink-300">
+                  {areaLabel(profile.area)} · {level?.label} · {ME.age}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <StreakFlame days={state.streak} size="sm" />
+                </div>
               </div>
-            </Field>
-          </ListRow>
-          <ListRow className="px-0 py-4">
-            <Field label="Preferred time">
-              {slots.map((s) => (
-                <Pill key={s} className="mr-1.5 mb-1.5 inline-flex">
-                  {s}
-                </Pill>
-              ))}
-            </Field>
-          </ListRow>
-          <ListRow className="px-0 py-4">
-            <span className="flex items-center justify-between gap-3">
-              <span>
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-500">
-                  Home gym
-                </span>
-                <span className="mt-1 block text-sm text-ink-300">
-                  {profile.currentGym || "Not set"}
-                </span>
-              </span>
-              <Badge tone="muted">Gym crowd cut from v1</Badge>
-            </span>
-          </ListRow>
-        </List>
-      </section>
+            </div>
 
-      {/* Communities */}
-      <section className="mb-6">
-        <SectionHeader
-          label={`Communities (${joined.length})`}
-          action={{ label: "Manage", href: "/app/community" }}
-        />
-        {joined.length === 0 ? (
-          <div className="py-4 text-center">
-            <p className="text-sm text-ink-400">No communities joined yet.</p>
-            <Link
-              href="/app/discover"
-              className="mt-2 inline-block text-sm font-semibold text-volt-700"
-            >
-              Find your people →
-            </Link>
-          </div>
-        ) : (
-          <List>
-            {joined.map((c) => (
-              <ListRow key={c.id} href={`/app/community/${c.id}`} chevron>
-                <span className="flex items-center gap-3.5">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-ink-300">
-                    <Glyph name={c.activity} size={21} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-ink-100">
-                      {c.name}
-                    </span>
-                    <span className="num block truncate text-[11px] text-ink-500">
-                      {c.members} members · {areaLabel(c.area)}
-                    </span>
-                  </span>
-                  <Badge tone="volt">Member</Badge>
-                </span>
-              </ListRow>
-            ))}
-          </List>
-        )}
-      </section>
+            <div className="mt-5 grid grid-cols-3 gap-4">
+              <StatTile label="Workouts" value={grouped(state.totalWorkouts)} icon="gym" />
+              <StatTile label="Streak" value={state.streak} unit="d" icon="flame" />
+              <StatTile label="PRs" value={state.personalRecords} icon="trophy" accent />
+            </div>
+          </Band>
 
-      {/* Upcoming commitments */}
-      <section className="mb-6">
-        <SectionHeader
-          label={`Upcoming (${joinedSessions.length})`}
-          action={{ label: "All sessions", href: "/app/sessions" }}
-        />
-        {joinedSessions.length === 0 ? (
-          <div className="py-4 text-center">
-            <p className="text-sm text-ink-400">Nothing committed yet.</p>
-          </div>
-        ) : (
-          <List>
-            {joinedSessions.map((s) => (
-              <ListRow key={s.id} href={`/app/sessions/${s.id}`} chevron>
-                <span className="flex items-center gap-3.5">
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-ink-100">
-                      {s.title}
-                    </span>
-                    <span className="num block truncate text-[11px] text-ink-500">
-                      {s.dayLabel} {s.date} · {s.time} · {s.location}
-                    </span>
-                  </span>
-                  {state.checkedIn.includes(s.id) && <Badge tone="ok">Checked in</Badge>}
-                </span>
-              </ListRow>
-            ))}
-          </List>
-        )}
-      </section>
+          {/* Bio */}
+          {ME.bio && (
+            <Band divided className="mb-6">
+              <SectionHeader label="About" />
+              <p className="text-sm leading-relaxed text-ink-300">{ME.bio}</p>
+            </Band>
+          )}
 
-      {/* Settings */}
-      <section className="mb-6">
-        <SectionHeader label="Settings" />
-        <List>
-          <ListRow>
-            <Toggle
-              checked={notify}
-              onChange={setNotify}
-              label="Session reminders"
-              hint="Push 1 hour before a session you joined"
+          {/* Matching inputs (PRD §7) — one list, not a box of dividers */}
+          <section className="mb-6">
+            <SectionHeader
+              label="Matched on"
+              hint="Set in onboarding · editable here"
+              action={{ label: "Re-do setup", href: "/onboarding/goals" }}
             />
-          </ListRow>
-          <SettingRow label="Notification history" href="/app/notifications" />
-          <SettingRow label="Account & privacy" href="/app/profile" />
-          <SettingRow label="Data export" href="/app/progress" />
-        </List>
-      </section>
+            <List>
+              <ListRow className="px-0 py-4">
+                <Field label="Goals">
+                  {goals.map((g) => (
+                    <Pill key={g} className="mr-1.5 mb-1.5 inline-flex">
+                      {g}
+                    </Pill>
+                  ))}
+                </Field>
+              </ListRow>
+              <ListRow className="px-0 py-4">
+                <Field label="Activities">
+                  {activities.map((a) => (
+                    <Pill key={a} className="mr-1.5 mb-1.5 inline-flex">
+                      {a}
+                    </Pill>
+                  ))}
+                </Field>
+              </ListRow>
+              <ListRow className="px-0 py-4">
+                <Field label="Training days">
+                  <div className="flex flex-wrap gap-1.5">
+                    {WEEKDAYS.map((d) => (
+                      <span
+                        key={d.id}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-bold ${
+                          profile.preferredDays.includes(d.id)
+                            ? "bg-volt-400 text-onvolt"
+                            : "bg-ink-750 text-ink-500"
+                        }`}
+                      >
+                        {d.label}
+                      </span>
+                    ))}
+                  </div>
+                </Field>
+              </ListRow>
+              <ListRow className="px-0 py-4">
+                <Field label="Preferred time">
+                  {slots.map((s) => (
+                    <Pill key={s} className="mr-1.5 mb-1.5 inline-flex">
+                      {s}
+                    </Pill>
+                  ))}
+                </Field>
+              </ListRow>
+              <ListRow className="px-0 py-4">
+                <span className="flex items-center justify-between gap-3">
+                  <span>
+                    <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                      Home gym
+                    </span>
+                    <span className="mt-1 block text-sm text-ink-300">
+                      {profile.currentGym || "Not set"}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={openEditor}
+                    className="shrink-0 rounded-lg border border-ink-600 px-2.5 py-1.5 text-[11px] font-semibold text-ink-200 transition hover:border-volt-400 hover:text-volt-700"
+                  >
+                    Edit
+                  </button>
+                </span>
+              </ListRow>
+            </List>
+          </section>
+        </div>
 
-      <div className="flex flex-col gap-3">
-        <Button full variant="secondary" onClick={() => setEditing(true)}>
-          Edit profile
-        </Button>
-        <Button full variant="ghost" href="/onboarding/welcome">
-          Back to onboarding
-        </Button>
-        <Button
-          full
-          variant="danger"
-          onClick={() => {
-            if (window.confirm("Reset all prototype state on this device?")) {
-              reset();
-              router.push("/onboarding/welcome");
-            }
-          }}
-        >
-          Reset prototype data
-        </Button>
-      </div>
+        <div>
+          {/* Communities */}
+          <section className="mb-6">
+            <SectionHeader
+              label={`Communities (${joined.length})`}
+              action={{ label: "Manage", href: "/app/community" }}
+            />
+            {joined.length === 0 ? (
+              <div className="py-4 text-center">
+                <p className="text-sm text-ink-400">No communities joined yet.</p>
+                <Link
+                  href="/app/discover"
+                  className="mt-2 inline-block text-sm font-semibold text-volt-700"
+                >
+                  Find your people →
+                </Link>
+              </div>
+            ) : (
+              <List>
+                {joined.map((c) => (
+                  <ListRow key={c.id} href={`/app/community/${c.id}`} chevron>
+                    <span className="flex items-center gap-3.5">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-ink-300">
+                        <Glyph name={c.activity} size={21} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-ink-100">
+                          {c.name}
+                        </span>
+                        <span className="num block truncate text-[11px] text-ink-500">
+                          {c.members} members · {areaLabel(c.area)}
+                        </span>
+                      </span>
+                      <Badge tone="volt">Member</Badge>
+                    </span>
+                  </ListRow>
+                ))}
+              </List>
+            )}
+          </section>
 
-      <div className="mt-6 border-l-2 border-volt-600 pl-4">
-        <p className="text-[13px] leading-relaxed text-ink-500">
-          <span className="font-semibold text-ink-100">Rich profiles</span>{" "}
-          (photos, badges, public history) are PRD §21 and scheduled for Phase 2.
-          v1 shows only what matching needs.
-        </p>
+          {/* Upcoming commitments */}
+          <section className="mb-6">
+            <SectionHeader
+              label={`Upcoming (${joinedSessions.length})`}
+              action={{ label: "All sessions", href: "/app/sessions" }}
+            />
+            {joinedSessions.length === 0 ? (
+              <div className="py-4 text-center">
+                <p className="text-sm text-ink-400">Nothing committed yet.</p>
+              </div>
+            ) : (
+              <List>
+                {joinedSessions.map((s) => (
+                  <ListRow key={s.id} href={`/app/sessions/${s.id}`} chevron>
+                    <span className="flex items-center gap-3.5">
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-ink-100">
+                          {s.title}
+                        </span>
+                        <span className="num block truncate text-[11px] text-ink-500">
+                          {s.dayLabel} {s.date} · {s.time} · {s.location}
+                        </span>
+                      </span>
+                      {state.checkedIn.includes(s.id) && (
+                        <Badge tone="ok">Checked in</Badge>
+                      )}
+                    </span>
+                  </ListRow>
+                ))}
+              </List>
+            )}
+          </section>
+
+          {/* Settings — only controls that actually do something. The old
+              "Account & privacy" row linked back to this page and "Data
+              export" was a label over the Progress route; both are gone. */}
+          <section className="mb-6">
+            <SectionHeader label="Settings" />
+            <List>
+              <ListRow>
+                <Toggle
+                  checked={state.sessionReminders}
+                  onChange={setSessionReminders}
+                  label="Session reminders"
+                  hint="Preference saved on this device"
+                />
+              </ListRow>
+              <ListRow href="/app/notifications" chevron>
+                <span className="block text-sm font-medium text-ink-100">
+                  Notification history
+                </span>
+              </ListRow>
+            </List>
+          </section>
+
+          <div className="flex flex-col gap-3">
+            <Button full variant="secondary" onClick={openEditor}>
+              Edit profile
+            </Button>
+            <Button full variant="ghost" href="/onboarding/welcome">
+              Back to onboarding
+            </Button>
+            {/* Confirmation flow preserved exactly as it was. */}
+            <Button
+              full
+              variant="danger"
+              onClick={() => {
+                if (window.confirm("Reset all prototype state on this device?")) {
+                  reset();
+                  router.push("/onboarding/welcome");
+                }
+              }}
+            >
+              Reset prototype data
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Edit sheet */}
@@ -293,7 +394,13 @@ export default function Profile() {
               Display name
             </span>
             <input
-              defaultValue={profile.name}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (status) setStatus(null);
+              }}
+              maxLength={NAME_MAX}
+              aria-invalid={status?.kind === "error"}
               className="w-full rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-3 text-sm text-ink-100 outline-none focus:border-volt-400"
             />
           </label>
@@ -302,21 +409,35 @@ export default function Profile() {
               Home gym
             </span>
             <input
-              defaultValue={profile.currentGym}
+              value={gym}
+              onChange={(e) => {
+                setGym(e.target.value);
+                if (status) setStatus(null);
+              }}
+              maxLength={GYM_MAX}
               placeholder="e.g. i-Fitness Lekki"
               className="w-full rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-3 text-sm text-ink-100 outline-none focus:border-volt-400"
             />
           </label>
-          <p className="text-xs leading-relaxed text-ink-500">
-            Saving is disabled in the prototype — matching inputs are edited
-            from onboarding so the loop stays visible.
-          </p>
+
+          {status && (
+            <p
+              role={status.kind === "error" ? "alert" : "status"}
+              className={cn(
+                "rounded-xl px-3.5 py-2.5 text-[13px] leading-snug",
+                STATUS_TONE[status.kind],
+              )}
+            >
+              {status.msg}
+            </p>
+          )}
+
           <div className="flex gap-2.5 pb-2">
             <Button full variant="secondary" onClick={() => setEditing(false)}>
               Cancel
             </Button>
-            <Button full onClick={() => setEditing(false)}>
-              Done
+            <Button full onClick={applied ? () => setEditing(false) : save}>
+              {applied ? "Done" : "Save"}
             </Button>
           </div>
         </div>
@@ -333,13 +454,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </p>
       <div>{children}</div>
     </div>
-  );
-}
-
-function SettingRow({ label, href }: { label: string; href: string }) {
-  return (
-    <ListRow href={href} chevron>
-      <span className="block text-sm font-medium text-ink-100">{label}</span>
-    </ListRow>
   );
 }
