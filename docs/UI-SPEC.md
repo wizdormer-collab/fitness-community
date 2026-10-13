@@ -116,9 +116,17 @@ Inter for everything (`--font-inter` → `--font-display` / `--font-body`).
 | A run of similar rows (list, settings, picker) | `List` + `ListRow` |
 | A pulled-aside note | `border-l-2 border-volt-600 pl-4` callout |
 | A 3-up stat strip | `grid grid-cols-3 divide-x divide-ink-700 border-y border-ink-700` |
+| A browse grid of results | `grid grid-cols-1 gap-3 lg:grid-cols-2` of `Card`s (Discover) |
 
 **Maximum two `Card`s per screen.** The pre-redesign screens had six or seven;
-each was collapsed into a `Band`/`List` or merged.
+each was collapsed into a `Band`/`List` or merged. The rule is about *competing
+framed sections stacked in a column* — it does not apply to a browse grid,
+where the repeated cards are the content itself (Discover is the only such
+screen today).
+
+Card footers inside a stretched grid row use `mt-auto` with the parent on
+`gap-3`: the auto margin absorbs the slack a taller neighbour creates, and the
+gap keeps the 12px minimum so the divider never touches the text above it.
 
 `ListRow` has `layout="row"` (default, centred single line) and
 `layout="block"` (full-width stacked content) — pass the prop, not a `block`
@@ -186,7 +194,7 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | Log | 0 (two `List` groups) |
 | Community feed | 1 (pinned community) |
 | Community detail | 1 (next session) + photo hero + feed posts |
-| Discover | 0 (one `List` group) |
+| Discover | browse grid of result cards (see §3 exception) + one `List` group inside the trainer sheet |
 | Boards | 1 (expandable challenge) |
 | Notifications | 0 (two `List` groups) |
 | Profile | 0 (bands + lists) |
@@ -249,6 +257,7 @@ default. Below `lg` every screen stays a single centred phone column
 | Navigation | `AppNav` — fixed bottom tab bar + floating log action | `AppSidebar` — fixed 248px left rail (264px at `xl`), brand + Log workout + tabs + Notifications |
 | Content frame | `max-w-[440px]`, centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
 | Home | single column | explicit 12-col placement: personal rail (4) left, live feed (8) right |
+| Discover | single-column result cards, chip rail scrolls edge-to-edge | same DOM, `lg:grid-cols-2`; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
 | Onboarding | one column | brand rail left + form card right |
 
 The desktop layouts are built with `lg:col-start/row-start` on the **same

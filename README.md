@@ -89,7 +89,16 @@ Tokens live in `src/app/globals.css`:
 one or two per screen. Everything else uses `Band` (unboxed section),
 `List`/`ListRow` (one white group per section), or a plain hairline-divided
 block. A column of six identical cards is what makes a screen read as a
-mockup, so the redesign systematically collapsed them.
+mockup, so the redesign systematically collapsed them. Discover is the one
+deliberate exception: a browse grid of repeated result cards *is* the content,
+not competing framed sections (`docs/UI-SPEC.md` §3).
+
+**Discover data.** `discoverItems()` in `selectors.ts` returns the seeded
+`DISCOVER_ITEMS` plus the `TRAINERS` collection mapped into the listing shape.
+Trainers are deliberately not copied into the seed — that would give every
+name, area and rating two homes to drift apart. Mapping at read time is what
+makes the "Trainers" category and the trainer detail sheet resolve; the
+category shipped with zero rows, so both were dead ends.
 
 **Icons.** `Glyph` is keyed by **domain id** (`ActivityId`, `FitnessGoalId`,
 `DiscoverCategoryId`, `TimeSlotId`, notification kind, venue icon) — never by
