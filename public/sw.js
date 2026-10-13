@@ -5,9 +5,16 @@
  * always shows the latest build when online), cache-first for hashed
  * static assets, stale-while-revalidate for everything else same-origin.
  * Offline navigations fall back to the prerendered /offline shell.
+ *
+ * CACHE is a version: bump it whenever shipped markup changes. Everything
+ * below "/" is served stale-first, so without a bump a returning visitor
+ * gets the previous build's payloads on client-side navigation and only
+ * the revalidate — which happens after they've already seen it. Bumping
+ * makes this file byte-differ, which installs a new worker whose activate
+ * handler drops every other cache.
  */
 
-const CACHE = "showup-v2";
+const CACHE = "showup-v3";
 const OFFLINE_URL = "/offline";
 
 const PRECACHE = ["/", OFFLINE_URL, "/manifest.webmanifest", "/icon.svg"];
