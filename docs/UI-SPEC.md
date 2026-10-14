@@ -116,7 +116,7 @@ Inter for everything (`--font-inter` → `--font-display` / `--font-body`).
 | A run of similar rows (list, settings, picker) | `List` + `ListRow` |
 | A pulled-aside note | `border-l-2 border-volt-600 pl-4` callout |
 | A 3-up stat strip | `grid grid-cols-3 divide-x divide-ink-700 border-y border-ink-700` |
-| A browse grid of results | `grid grid-cols-1 gap-3 md:grid-cols-2` of `Card`s (Discover, Sessions, Home nearby) |
+| A browse grid of results | `grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3` of `Card`s (Discover, Sessions, Home nearby) |
 
 **Maximum two `Card`s per screen.** The pre-redesign screens had six or seven;
 each was collapsed into a `Band`/`List` or merged. The rule is about *competing
@@ -125,9 +125,16 @@ where the repeated cards are the content itself (Discover, Sessions and Home's
 nearby row are the three such screens). Home keeps its standalone count at two
 (today's session, community) by rendering the personal record as a `Band`.
 
-Home's nearby grid switches columns at `md`, not `lg`: its frame only widens
-at `md`, and at phone widths two columns would squeeze cards the brief
-explicitly warns against.
+Home's nearby grid and Discover's grids switch columns at `md`, not `lg`: the
+frame only widens at `md`, and at phone widths two columns would squeeze cards
+the brief explicitly warns against.
+
+Discover splits its results into three grids — sessions, places & people,
+communities — rather than one mixed grid. The card shapes differ too much for
+a shared grid (a photo card is roughly twice the height of a listing), so a
+single grid stretches the short cards into mostly air; separate grids keep
+every row an even height. Cards are left to stretch (no `items-start`) for the
+same reason.
 
 Card footers inside a stretched grid row use `mt-auto` with the parent on
 `gap-3`: the auto margin absorbs the slack a taller neighbour creates, and the
@@ -199,7 +206,7 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | Log | 0 (two `List` groups) |
 | Community feed | 1 (pinned community) |
 | Community detail | 1 (next session) + photo hero + feed posts |
-| Discover | browse grid of result cards (see §3 exception) + one `List` group inside the trainer sheet |
+| Discover | featured session panel (navy surface, not a `Card`) + browse grid of result cards (see §3 exception) + one `List` group inside the trainer sheet |
 | Boards | 1 (expandable challenge) |
 | Notifications | 0 (two `List` groups) |
 | Profile | 0 (bands + lists) |
@@ -220,12 +227,17 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | `community.jpg` | Community detail hero (`aspect-[16/9]`) |
 | `empty.jpg` | Offline screen (`aspect-[16/9]`) |
 | `group.jpg` | Home community section (`aspect-[16/9]`) |
-| `gym.jpg` `running.jpg` `yoga.jpg` `swimming.jpg` `football.jpg` `cycling.jpg` | Activity cards in Home's nearby grid, via `photoForActivity()` (`aspect-[16/10]`) |
+| `gym.jpg` `running.jpg` `yoga.jpg` `swimming.jpg` `football.jpg` `cycling.jpg` | Activity cards in Home's nearby grid (`aspect-[16/10]`) and Discover (`aspect-[16/10]` sessions, `aspect-[16/9]` communities), via `photoForActivity()` |
 
 Everything else stays typographic — icons, type and space carry the rest.
 Photos that sit beside their own text use `alt=""` (the label already says it);
 the two editorial heroes get a real description. Activities with no frame fall
 back to `session.jpg`, so new data cannot produce a broken box.
+
+Discover photographs only what has an activity to photograph: sessions and
+communities. Its gyms, coaches, events and challenges stay glyph-led, because
+the data holds no image for them — borrowing a sport photo for a venue would
+be inventing content, which the brief rules out.
 
 Lagos is a football city: `football.jpg` is association football on a local
 pitch, not a branded stadium shot.
@@ -280,7 +292,7 @@ app happens at `lg`, so there is no half-desktop state to squeeze.
 | Navigation | `AppNav` — fixed bottom tab bar + floating log action | `AppSidebar` — fixed 248px left rail (264px at `xl`), navy, brand + Log workout + tabs + area; `AppTopBar` — sticky 56px toolbar with the section name, Search, Notifications and the account avatar |
 | Content frame | `max-w-[440px]` (`max-w-[600px]` from `md`), centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
 | Home | hero → session → community → nearby → record → callout, all stacked | explicit 12-col placement: hero full width (12); today's session (8) beside your community (4); nearby grid (8) beside the personal record band (4); callout full width |
-| Discover | single-column result cards, chip rail and the "Recommended" row scroll edge-to-edge | same DOM, `lg:grid-cols-2` for results and `lg:grid-cols-3` for the Recommended row; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
+| Discover | featured panel stacks (copy then photograph); sessions, places & people and communities each a single column; chip rail scrolls edge-to-edge | same DOM, each of the three sections becomes `lg:grid-cols-3`; the featured session splits into navy copy beside the photograph (`lg:grid-cols-[1.02fr_0.98fr]`); search field capped at `lg:max-w-xl`, chip rail needs no scroll |
 | Sessions | stacked session cards, segmented filter full width | same DOM, `lg:grid-cols-2`; segmented filter capped at `lg:max-w-lg` so it does not read as a banner |
 | Session detail | one column: hero → booking panel → organiser → about → attendees → chat | same DOM, `lg:max-w-4xl` with `lg:grid-cols-[minmax(0,1fr)_320px]`; the booking panel is first in the DOM (so the join action stays directly under the hero on mobile) and ordered to the right column at `lg`, where it is sticky |
 | Progress | 2-col stat grid, everything else stacked | same DOM, stats `lg:grid-cols-4`; the two chart bands side by side (`lg:grid-cols-2`); records and recent history side by side (`lg:grid-cols-2`) |
