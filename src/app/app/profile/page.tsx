@@ -150,33 +150,45 @@ export default function Profile() {
           wrappers are plain blocks and the mobile reading order is unchanged. */}
       <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
         <div>
-          {/* Identity — unframed, deliberately compact (lg = 64px, not xl = 96px) */}
-          <Band divided className="mb-6">
+          {/* Identity — the one navy surface on Profile, echoing the Home
+              hero: this block is about *who*, not *what*. `StreakFlame` and
+              `StatTile` keep their light-surface colours (warn-600 on navy
+              measures 4.4:1, under AA at 11px), so they sit on the canvas
+              directly below rather than needing a second palette. */}
+          <section className="mb-4 overflow-hidden rounded-2xl border border-ink-700 bg-navy-50 p-5">
             <div className="flex items-start gap-4">
               <Avatar initials={ME.initials} tone={ME.tone} size="lg" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-display text-xl font-bold text-ink-50">
+                  <h2 className="font-display text-xl font-bold text-onnavy">
                     {profile.name || ME.name}
                   </h2>
-                  {ME.verified && <Badge tone="ok">Verified</Badge>}
                 </div>
-                <p className="num mt-0.5 text-xs text-ink-500">{ME.handle}</p>
-                <p className="mt-2 text-[13px] leading-relaxed text-ink-300">
+                <p className="num mt-0.5 text-xs text-onnavy-mute">{ME.handle}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-onnavy-dim">
                   {areaLabel(profile.area)} · {level?.label} · {ME.age}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <StreakFlame days={state.streak} size="sm" />
-                </div>
               </div>
             </div>
+          </section>
 
-            <div className="mt-5 grid grid-cols-3 gap-4">
-              <StatTile label="Workouts" value={grouped(state.totalWorkouts)} icon="gym" />
-              <StatTile label="Streak" value={state.streak} unit="d" icon="flame" />
-              <StatTile label="PRs" value={state.personalRecords} icon="trophy" accent />
-            </div>
-          </Band>
+          {/* Badges stay off the navy: `Badge`'s ok tone is dark green on a
+              10% tint, which measures 4.1:1 on navy — under AA at 11px. Same
+              semantics, same component, just the light surface it is built for. */}
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+            <StreakFlame days={state.streak} size="sm" />
+            {ME.verified && <Badge tone="ok">Verified</Badge>}
+          </div>
+
+          {/* 3-up strip. Same treatment Progress already uses (gap, not a
+              divided table — StatTile is built for the gap form), and the
+              hairline below matches what the `Band`s further down the column
+              do, so the rhythm is identical left of the divider. */}
+          <div className="mb-6 grid grid-cols-3 gap-4 border-b border-ink-700 pb-6">
+            <StatTile label="Workouts" value={grouped(state.totalWorkouts)} icon="gym" />
+            <StatTile label="Streak" value={state.streak} unit="d" icon="flame" />
+            <StatTile label="PRs" value={state.personalRecords} icon="trophy" accent />
+          </div>
 
           {/* Bio */}
           {ME.bio && (
