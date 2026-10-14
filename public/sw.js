@@ -14,7 +14,7 @@
  * handler drops every other cache.
  */
 
-const CACHE = "showup-v3";
+const CACHE = "showup-v4";
 const OFFLINE_URL = "/offline";
 
 const PRECACHE = ["/", OFFLINE_URL, "/manifest.webmanifest", "/icon.svg"];

@@ -22,6 +22,20 @@
   --color-ink-900: #ffffff;
   --color-ink-950: #f8f7f1; /* #F8F7F1 — warm cream canvas */
 
+  /* ---- Navy surfaces — structural dark panels ----
+     The desktop sidebar, top bar and hero are BUILT FROM #101F2D, so the ink
+     scale can't be used there: ink-50 is the darkest *text* but would also be
+     the darkest *surface*, which inverts the ramp and makes every utility read
+     backwards. These tokens are the dark counterpart — same navy, but with the
+     text/border roles expressed against it. Ratios are on #101F2D. */
+  --color-navy-50: #101f2d; /* the base panel */
+  --color-navy-100: #17293b; /* raised panel / hover */
+  --color-navy-200: #21374b; /* pressed / selected row */
+  --color-navy-line: rgba(248, 247, 241, 0.12); /* hairline on navy */
+  --color-onnavy: #f8f7f1; /* primary text — 15.6:1 */
+  --color-onnavy-dim: #a7b4c2; /* secondary — 7.9:1, AAA */
+  --color-onnavy-mute: #7f8fa1; /* tertiary / meta — 5.1:1, AA */
+
   /* ---- Volt (accent) — lime #B8F34A
      Split by role, not by hue:
        400 = the FILL (buttons, dots, chips, selected states)

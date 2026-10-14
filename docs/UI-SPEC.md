@@ -116,13 +116,18 @@ Inter for everything (`--font-inter` → `--font-display` / `--font-body`).
 | A run of similar rows (list, settings, picker) | `List` + `ListRow` |
 | A pulled-aside note | `border-l-2 border-volt-600 pl-4` callout |
 | A 3-up stat strip | `grid grid-cols-3 divide-x divide-ink-700 border-y border-ink-700` |
-| A browse grid of results | `grid grid-cols-1 gap-3 lg:grid-cols-2` of `Card`s (Discover, Sessions) |
+| A browse grid of results | `grid grid-cols-1 gap-3 md:grid-cols-2` of `Card`s (Discover, Sessions, Home nearby) |
 
 **Maximum two `Card`s per screen.** The pre-redesign screens had six or seven;
 each was collapsed into a `Band`/`List` or merged. The rule is about *competing
 framed sections stacked in a column* — it does not apply to a browse grid,
-where the repeated cards are the content itself (Discover and Sessions are the
-two such screens today).
+where the repeated cards are the content itself (Discover, Sessions and Home's
+nearby row are the three such screens). Home keeps its standalone count at two
+(today's session, community) by rendering the personal record as a `Band`.
+
+Home's nearby grid switches columns at `md`, not `lg`: its frame only widens
+at `md`, and at phone widths two columns would squeeze cards the brief
+explicitly warns against.
 
 Card footers inside a stretched grid row use `mt-auto` with the parent on
 `gap-3`: the auto margin absorbs the slack a taller neighbour creates, and the
@@ -186,7 +191,7 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | Screen | Framed objects |
 |---|---|
 | Welcome | 0 (photo hero + divided `<ul>`) |
-| Home | 3 (week, today's session, community) + 1 `List` surface (nearby) |
+| Home | hero (navy + photo) + today's session + community + nearby browse grid (see §3 exception) + record band + callout |
 | Progress | 2 (weekly volume, consistency) |
 | Sessions | browse grid of session cards (see §3 exception) |
 | Session detail | 2 (booking panel, chat) + photo hero |
@@ -204,17 +209,26 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 
 ## 6. Photography
 
-`public/photos/` — Unsplash License, 122–256 KB, `?w=1600&q=72&fm=jpg&fit=max`.
+`public/photos/` — Unsplash License, 109–255 KB, ≤1600px wide
+(`?w=1600&q=72&fm=jpg&fit=max`, then re-encoded to land inside that band).
 
 | File | Used on |
 |---|---|
-| `hero-run.jpg` | Welcome hero (`aspect-[4/5]`) |
-| `session.jpg` | Session detail hero (`aspect-[16/9]`) |
+| `hero-run.jpg` | Welcome hero (`aspect-[4/5]`), Home hero (`aspect-[16/9]`, `lg:aspect-auto`) |
+| `session.jpg` | Session detail hero (`aspect-[16/9]`), Home's today's-session photo (`lg:aspect-auto`) |
 | `checkin.jpg` | Check-in venue band (`aspect-[16/9]`) |
 | `community.jpg` | Community detail hero (`aspect-[16/9]`) |
 | `empty.jpg` | Offline screen (`aspect-[16/9]`) |
+| `group.jpg` | Home community section (`aspect-[16/9]`) |
+| `gym.jpg` `running.jpg` `yoga.jpg` `swimming.jpg` `football.jpg` `cycling.jpg` | Activity cards in Home's nearby grid, via `photoForActivity()` (`aspect-[16/10]`) |
 
-Nowhere else. Icons, type and space carry the rest.
+Everything else stays typographic — icons, type and space carry the rest.
+Photos that sit beside their own text use `alt=""` (the label already says it);
+the two editorial heroes get a real description. Activities with no frame fall
+back to `session.jpg`, so new data cannot produce a broken box.
+
+Lagos is a football city: `football.jpg` is association football on a local
+pitch, not a branded stadium shot.
 
 ---
 
@@ -257,13 +271,15 @@ entrance animations are opacity+transform only.
 
 `lg` (1024px) is the only custom breakpoint — everything else is a Tailwind
 default. Below `lg` every screen stays a single centred phone column
-(`max-w-[440px]`); tablets included.
+(`max-w-[440px]`), widening to `max-w-[600px]` from `md` (768px) so a tablet
+gets a roomier column instead of a phone-sized one. Every layout switch in the
+app happens at `lg`, so there is no half-desktop state to squeeze.
 
 | | `< lg` | `≥ lg` |
 |---|---|---|
-| Navigation | `AppNav` — fixed bottom tab bar + floating log action | `AppSidebar` — fixed 248px left rail (264px at `xl`), brand + Log workout + tabs + Notifications |
-| Content frame | `max-w-[440px]`, centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
-| Home | single column | explicit 12-col placement: personal rail (4) left, live feed (8) right |
+| Navigation | `AppNav` — fixed bottom tab bar + floating log action | `AppSidebar` — fixed 248px left rail (264px at `xl`), navy, brand + Log workout + tabs + area; `AppTopBar` — sticky 56px toolbar with the section name, Search, Notifications and the account avatar |
+| Content frame | `max-w-[440px]` (`max-w-[600px]` from `md`), centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
+| Home | hero → session → community → nearby → record → callout, all stacked | explicit 12-col placement: hero full width (12); today's session (8) beside your community (4); nearby grid (8) beside the personal record band (4); callout full width |
 | Discover | single-column result cards, chip rail and the "Recommended" row scroll edge-to-edge | same DOM, `lg:grid-cols-2` for results and `lg:grid-cols-3` for the Recommended row; search field capped at `lg:max-w-xl`, chip rail needs no scroll |
 | Sessions | stacked session cards, segmented filter full width | same DOM, `lg:grid-cols-2`; segmented filter capped at `lg:max-w-lg` so it does not read as a banner |
 | Session detail | one column: hero → booking panel → organiser → about → attendees → chat | same DOM, `lg:max-w-4xl` with `lg:grid-cols-[minmax(0,1fr)_320px]`; the booking panel is first in the DOM (so the join action stays directly under the hero on mobile) and ordered to the right column at `lg`, where it is sticky |

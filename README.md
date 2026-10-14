@@ -153,11 +153,15 @@ emoji character. The `emoji` fields on `types.ts` / `mock-data.ts` are part of
 the future REST contract and are intentionally untouched; the render layer
 reads them nowhere.
 
-**Photography.** Five curated images in `public/photos/` (Unsplash License,
-122–256 KB): `hero-run`, `session`, `checkin`, `community`, `empty`. Used only
-where a picture earns its place — welcome hero, session hero, community hero,
-check-in venue, offline. `Photo` falls back to a volt→ink gradient if a file
-is ever missing.
+**Photography.** Twelve curated images in `public/photos/` (Unsplash License,
+109–255 KB, ≤1600px wide): `hero-run`, `session`, `checkin`, `community`,
+`empty`, `group`, plus one frame per activity in `SESSIONS` (`gym`,
+`running`, `yoga`, `swimming`, `football`, `cycling`) which
+`photoForActivity()` maps to. Used only where a picture earns its place —
+welcome hero, home hero, today's session, the community band, session and
+activity cards, community hero, check-in venue, offline. `Photo` falls back to
+a volt→ink gradient if a file is ever missing, and unknown activities fall
+back to `session.jpg` so new data can never render a broken box.
 
 ## PRD decisions worth knowing
 
