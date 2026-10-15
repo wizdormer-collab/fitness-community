@@ -297,6 +297,7 @@ app happens at `lg`, so there is no half-desktop state to squeeze.
 | Session detail | one column: hero → booking panel → organiser → about → attendees → chat | same DOM, `lg:max-w-4xl` with `lg:grid-cols-[minmax(0,1fr)_320px]`; the booking panel is first in the DOM (so the join action stays directly under the hero on mobile) and ordered to the right column at `lg`, where it is sticky |
 | Progress | 2-col stat grid, everything else stacked | same DOM, stats `lg:grid-cols-4`; the two chart bands side by side (`lg:grid-cols-2`); records and recent history side by side (`lg:grid-cols-2`) |
 | Profile | compact identity block, sections stacked in reading order | same DOM, `lg:grid-cols-2` — profile (identity → about → matched on) left, activity and controls (communities → upcoming → settings → actions) right, so settings stay near the top instead of below a full-width stack |
+| Log workout | segmented → mode fields → details → save, stacked in one column | same DOM, `lg:grid-cols-[minmax(0,1fr)_320px]` — mode fields left, details + save + tags in the right rail (the rail follows the mode section in the DOM, so mobile order is untouched); segmented capped at `lg:max-w-lg`, exercise fields at `lg:max-w-[520px]` so nothing reads as a full-bleed banner or a text area |
 | Onboarding | one column | brand rail left + form card right |
 
 The desktop layouts are built with `lg:col-start/row-start` on the **same

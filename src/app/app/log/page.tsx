@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, SegmentedControl, Tag, Toggle } from "@/components/ui/controls";
 import { List, ListRow, SectionHeader } from "@/components/ui/card";
@@ -49,7 +49,37 @@ export default function LogWorkout() {
   const removeRow = (id: number) =>
     setRows((r) => (r.length > 1 ? r.filter((row) => row.id !== id) : r));
 
-  const topWeight = rows.reduce((max, r) => Math.max(max, r.weightKg), 0);
+  // The record note must name the lift that actually produced the top weight.
+  // It used to say "Bench" unconditionally, so a 60 kg squat reached Progress
+  // as "Bench 60kg" — a fabricated attribution on a screen that exists to
+  // report real training data.
+  const topRow = rows.reduce(
+    (best, r) => (r.weightKg > best.weightKg ? r : best),
+    rows[0]!,
+  );
+  const topWeight = topRow.weightKg;
+
+  // Redirect timer, held in a ref so it can be cancelled: choosing "Log
+  // another" on the saved screen used to leave the push armed, and the user
+  // was navigated to Progress moments after asking to stay and log again.
+  const navTimer = useRef<number | null>(null);
+  const cancelNav = () => {
+    if (navTimer.current !== null) {
+      window.clearTimeout(navTimer.current);
+      navTimer.current = null;
+    }
+  };
+  useEffect(
+    () => () => {
+      if (navTimer.current !== null) window.clearTimeout(navTimer.current);
+    },
+    [],
+  );
+
+  // Strength needs at least one named exercise — otherwise every row is saved
+  // under the fallback name "Exercise", which is placeholder content in a log.
+  const needsName =
+    mode === "strength" && rows.every((r) => !r.exercise.trim());
 
   const save = () => {
     const isRun = mode === "run";
@@ -75,7 +105,10 @@ export default function LogWorkout() {
       location: location || undefined,
       sharedToFeed: shared,
       isPR: isStrength && topWeight >= 55,
-      prNote: isStrength && topWeight >= 55 ? `Bench ${topWeight}kg` : undefined,
+      prNote:
+        isStrength && topWeight >= 55
+          ? `${topRow.exercise.trim() || "Top set"} ${topWeight}kg`
+          : undefined,
       strength: isStrength
         ? rows.map((r) => ({
             exercise: r.exercise || "Exercise",
@@ -89,7 +122,11 @@ export default function LogWorkout() {
     });
 
     setSaved(true);
-    window.setTimeout(() => router.push("/app/progress"), 1100);
+    cancelNav();
+    navTimer.current = window.setTimeout(
+      () => router.push("/app/progress"),
+      1100,
+    );
   };
 
   if (saved) {
@@ -106,7 +143,13 @@ export default function LogWorkout() {
         </p>
         <div className="mt-6 flex gap-2.5">
           <Button onClick={() => router.push("/app/progress")}>See progress</Button>
-          <Button variant="secondary" onClick={() => setSaved(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              cancelNav();
+              setSaved(false);
+            }}
+          >
             Log another
           </Button>
         </div>
@@ -115,16 +158,23 @@ export default function LogWorkout() {
   }
 
   return (
-    <div>
-      <ScreenHeader
-        title="Log workout"
-        subtitle="Manual entry in v1 — wearable integrations come after product-market validation."
-        backHref="/app"
-        backLabel="Home"
-      />
+    // Desktop uses the session-detail split: mode fields left, shared details
+    // and the save action in a 320px right rail — the primary action sits
+    // beside the form instead of stretching across the full 1120px frame.
+    // Below lg both wrappers are plain blocks, so the mobile reading order is
+    // exactly what it was.
+    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-x-8">
+      <div className="lg:col-span-2">
+        <ScreenHeader
+          title="Log workout"
+          subtitle="Manual entry in v1 — wearable integrations come after product-market validation."
+          backHref="/app"
+          backLabel="Home"
+        />
+      </div>
 
       <SegmentedControl<Mode>
-        className="mb-6"
+        className="mb-6 lg:col-span-2 lg:max-w-lg"
         value={mode}
         onChange={setMode}
         options={[
@@ -143,7 +193,9 @@ export default function LogWorkout() {
           <List variant="surface">
             {rows.map((r) => (
               <ListRow key={r.id} layout="block" className="py-4">
-                <div className="flex gap-2">
+                {/* Capped at lg: in a 688px column a full-width name field
+                    reads as a text area rather than a form control. */}
+                <div className="flex gap-2 lg:max-w-[520px]">
                   <input
                     value={r.exercise}
                     onChange={(e) => updateRow(r.id, { exercise: e.target.value })}
@@ -160,7 +212,7 @@ export default function LogWorkout() {
                   </button>
                 </div>
 
-                <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="mt-3 grid grid-cols-3 gap-2 lg:max-w-[520px]">
                   {(
                     [
                       { key: "sets", label: "Sets", step: 1, min: 1 },
@@ -284,51 +336,59 @@ export default function LogWorkout() {
         </section>
       )}
 
-      {/* Shared settings */}
-      <section className="mb-7">
-        <SectionHeader label="Details" />
-        <List variant="surface">
-          <ListRow layout="block" className="py-3.5">
-            <Stepper
-              label="Duration"
-              unit="min"
-              value={durationMin}
-              step={5}
-              min={5}
-              onChange={setDuration}
-            />
-          </ListRow>
-          <ListRow layout="block" className="py-3.5">
-            <label className="block">
-              <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink-500">
-                Location
-              </span>
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Where did you train?"
-                className="w-full rounded-lg border border-ink-700 bg-ink-850 px-3 py-2.5 text-sm text-ink-100 outline-none placeholder:text-ink-600 focus:border-volt-400"
+      {/* Right rail: shared details + save. Plain block below lg. */}
+      <div className="min-w-0 lg:col-start-2">
+        {/* Shared settings */}
+        <section className="mb-7">
+          <SectionHeader label="Details" />
+          <List variant="surface">
+            <ListRow layout="block" className="py-3.5">
+              <Stepper
+                label="Duration"
+                unit="min"
+                value={durationMin}
+                step={5}
+                min={5}
+                onChange={setDuration}
               />
-            </label>
-          </ListRow>
-          <ListRow layout="block" className="py-3.5">
-            <Toggle
-              checked={shared}
-              onChange={setShared}
-              label="Share to my feed"
-              hint={shared ? "Your community will see this workout" : "Only you can see it"}
-            />
-          </ListRow>
-        </List>
-      </section>
+            </ListRow>
+            <ListRow layout="block" className="py-3.5">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                  Location
+                </span>
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Where did you train?"
+                  className="w-full rounded-lg border border-ink-700 bg-ink-850 px-3 py-2.5 text-sm text-ink-100 outline-none placeholder:text-ink-600 focus:border-volt-400"
+                />
+              </label>
+            </ListRow>
+            <ListRow layout="block" className="py-3.5">
+              <Toggle
+                checked={shared}
+                onChange={setShared}
+                label="Share to my feed"
+                hint={shared ? "Your community will see this workout" : "Only you can see it"}
+              />
+            </ListRow>
+          </List>
+        </section>
 
-      <Button full size="lg" onClick={save}>
-        Save workout
-      </Button>
+        <Button full size="lg" onClick={save} disabled={needsName}>
+          Save workout
+        </Button>
+        {needsName && (
+          <p className="mt-2 text-center text-xs text-ink-500">
+            Give at least one exercise a name before saving.
+          </p>
+        )}
 
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
-        <Tag>Wearables connect after product-market validation</Tag>
-        <Tag>Export data</Tag>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <Tag>Wearables connect after product-market validation</Tag>
+          <Tag>Export data</Tag>
+        </div>
       </div>
     </div>
   );
