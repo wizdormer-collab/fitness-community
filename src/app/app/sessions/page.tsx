@@ -2,17 +2,14 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AvatarStack } from "@/components/ui/avatar";
-import { Badge, Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/controls";
 import { ScreenHeader } from "@/components/ui/header";
-import { SpotMeter } from "@/components/ui/metrics";
+import { SessionCard } from "@/components/ui/session-card";
 import { EmptyState } from "@/components/ui/state";
 import { cn } from "@/lib/cn";
 import { userById, upcoming, visibleSpots } from "@/lib/selectors";
 import { usePrototype } from "@/lib/prototype-state";
-import { activityLabel, areaLabel, levelLabel } from "@/lib/format";
-import { Glyph, GlyphTile } from "@/components/ui/glyph";
+import { Glyph } from "@/components/ui/glyph";
 
 type Filter = "upcoming" | "joined" | "free";
 
@@ -97,72 +94,30 @@ export default function Sessions() {
         />
       ) : (
         /* A browse grid of repeated session cards is the documented exception
-           to the two-card budget (UI-SPEC §3) — same treatment as Discover,
-           and the only layout that keeps the spot meter readable on desktop. */
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+           to the two-card budget (UI-SPEC §3). The same three-switch grid
+           Discover uses, so the shared card keeps one density everywhere. */
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {list.map((s) => {
             // Joining/leaving moves capacity by one (visibleSpots) — the
             // attendee count moves with it, from the same delta, so the
             // number beside the avatars can never disagree with the meter.
             const spots = visibleSpots(s, s.nowJoined);
             const going = s.attendeeIds.length + (spots - s.spotsTaken);
-            const full = spots >= s.maxSpots;
 
             return (
-              <Link
+              <SessionCard
                 key={s.id}
-                href={`/app/sessions/${s.id}`}
-                className="block h-full animate-fade-up"
-              >
-                <Card className="flex h-full flex-col gap-3 p-4 transition hover:-translate-y-0.5 hover:border-ink-600">
-                  <span className="flex items-start gap-3">
-                    <GlyphTile name={s.activity} size="lg" />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-start justify-between gap-2">
-                        <span className="font-display text-[15px] font-bold leading-snug text-ink-50">
-                          {s.title}
-                        </span>
-                        <span className="shrink-0">
-                          {s.nowJoined ? (
-                            <Badge tone="ok">Joined</Badge>
-                          ) : full ? (
-                            <Badge tone="bad">Full</Badge>
-                          ) : s.cost === 0 ? (
-                            <Badge tone="volt">Free</Badge>
-                          ) : (
-                            <Badge tone="info">
-                              ₦{s.cost.toLocaleString()}
-                            </Badge>
-                          )}
-                        </span>
-                      </span>
-                      <span className="mt-0.5 block truncate text-[13px] text-ink-400">
-                        {activityLabel(s.activity)} · {s.dayLabel} · {s.time}
-                      </span>
-                    </span>
-                  </span>
-
-                  <span className="block truncate text-[13px] text-ink-400">
-                    {s.location} · {areaLabel(s.area)} · {levelLabel(s.level)}
-                  </span>
-
-                  <SpotMeter taken={spots} max={s.maxSpots} />
-
-                  <span className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-ink-700 pt-3">
-                    <AvatarStack
-                      people={s.attendeeIds.slice(0, 4).map((id) => {
-                        const u = userById(id);
-                        return { initials: u.initials, tone: u.tone };
-                      })}
-                      size="xs"
-                      max={4}
-                    />
-                    <span className="num text-[11px] text-ink-500">
-                      {going} going · {s.organizerName}
-                    </span>
-                  </span>
-                </Card>
-              </Link>
+                session={s}
+                taken={spots}
+                going={going}
+                joined={s.nowJoined}
+                people={s.attendeeIds.slice(0, 4).map((id) => {
+                  const u = userById(id);
+                  return { initials: u.initials, tone: u.tone };
+                })}
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 300px, 360px"
+                className="animate-fade-up"
+              />
             );
           })}
         </div>

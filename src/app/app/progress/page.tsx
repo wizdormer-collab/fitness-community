@@ -10,7 +10,7 @@ import {
   ListRow,
 } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/header";
-import { StatTile, Ring, StreakFlame, ProgressBar } from "@/components/ui/metrics";
+import { StatTile, Ring, StreakFlame } from "@/components/ui/metrics";
 import { BarChart, Sparkline, Heatmap, ActivitySplit } from "@/components/ui/charts";
 import { Chip } from "@/components/ui/controls";
 import { Avatar } from "@/components/ui/avatar";
@@ -88,7 +88,6 @@ export default function Progress() {
       <ScreenHeader
         title="Progress"
         subtitle="Where the last 90 days actually went."
-        right={<StreakFlame days={state.streak} size="sm" />}
       />
 
       {/* 1. Summary — four across on desktop, two on mobile */}
@@ -130,9 +129,16 @@ export default function Progress() {
           label="This week"
           hint={`Committed to ${target} sessions`}
         />
-        <div className="flex items-center gap-5">
+        {/* Goal and streak read as one compact component — the ring is the
+            progress indicator (the old bar underneath restated the same 3/4),
+            and the streak chip that used to float in the header now sits with
+            the goal it keeps alive. */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
           <Ring value={completed} max={target} size={84} label="sessions" />
-          <div className="min-w-0 flex-1">
+          {/* min-w (not min-w-0): without a floor the flex-1 copy absorbs the
+              squeeze on narrow screens and the streak chip wraps only after
+              the headline is already crushed to ~110px. */}
+          <div className="min-w-[13rem] flex-1">
             <p className="font-display text-base font-bold leading-tight text-ink-50">
               {goalMet
                 ? "Weekly goal met"
@@ -143,13 +149,10 @@ export default function Progress() {
                 ? "Consistency beats intensity. Same time next week."
                 : `${remaining} more ${plural(remaining, "session")} keeps your streak alive.`}
             </p>
-            <ProgressBar
-              className="mt-3"
-              value={completed}
-              max={target}
-              showLabel
-            />
           </div>
+          {/* ml-auto keeps the chip on the right edge when it wraps to its own
+              line on phones — mirroring its desktop position. */}
+          <StreakFlame days={state.streak} size="md" className="ml-auto" />
         </div>
         {/* PRD §8 — the commitment is public, so it reads as a promise, not a private counter. */}
         <p className="mt-4 flex items-start gap-2 rounded-xl bg-volt-400/10 px-3.5 py-3 text-[13px] leading-snug text-volt-800 ring-1 ring-inset ring-volt-600/25">
@@ -246,32 +249,16 @@ export default function Progress() {
       {/* 4. Where time goes */}
       <Band label="Where time goes" hint="By session type" className="mb-6">
         <ActivitySplit items={byActivity} />
-        <List className="mt-4">
-          <ListRow>
-            <span className="flex items-center justify-between gap-3">
-              <span className="text-sm text-ink-400">Current streak</span>
-              <span className="num font-display font-bold text-warn-400">
-                {state.streak} {plural(state.streak, "day")}
-              </span>
-            </span>
-          </ListRow>
-          <ListRow>
-            <span className="flex items-center justify-between gap-3">
-              <span className="text-sm text-ink-400">Days trained (90)</span>
-              <span className="num font-display font-bold text-ink-100">
-                {daysTrained}
-              </span>
-            </span>
-          </ListRow>
-          <ListRow>
-            <span className="flex items-center justify-between gap-3">
-              <span className="text-sm text-ink-400">Avg session</span>
-              <span className="num font-display font-bold text-ink-100">
-                {duration(avgMin)}
-              </span>
-            </span>
-          </ListRow>
-        </List>
+        {/* Streak moved up to the goal band, and days-trained isn't repeated
+            here — the heatmap footer above already states "N of 90 days
+            trained". Avg session is the one summary that belongs with
+            time-by-type, so it stays as a tail line under the split. */}
+        <div className="mt-4 flex items-center justify-between border-t border-ink-700 pt-3">
+          <span className="text-sm text-ink-400">Avg session</span>
+          <span className="num font-display font-bold text-ink-100">
+            {duration(avgMin)}
+          </span>
+        </div>
       </Band>
 
       {/* 5. Records + history — side by side on desktop */}
@@ -279,7 +266,7 @@ export default function Progress() {
         <section id="records" className="mb-6">
           <SectionHeader
             label="Personal records"
-            hint={`${PROGRESS.records.length} exercises tracked`}
+            hint={`${records.length} ${plural(records.length, "record")}`}
           />
           <List>
             {records.map((r) => (

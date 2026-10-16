@@ -6,7 +6,8 @@ import { Badge, Band, Card, SectionHeader } from "@/components/ui/card";
 import { Button, Chip } from "@/components/ui/controls";
 import { Ring, SpotMeter, StreakFlame } from "@/components/ui/metrics";
 import { Glyph } from "@/components/ui/glyph";
-import { Photo, photoForActivity } from "@/components/ui/photo";
+import { Photo } from "@/components/ui/photo";
+import { SessionCard } from "@/components/ui/session-card";
 import { usePrototype } from "@/lib/prototype-state";
 import { COMMUNITIES, NOTIFICATIONS, PROGRESS, SESSIONS, ME } from "@/lib/mock-data";
 import { userById, visibleSpots } from "@/lib/selectors";
@@ -299,49 +300,18 @@ export default function Home() {
             const joined = isSessionJoined(s.id);
             const taken = visibleSpots(s, joined);
             return (
-              <Link
+              <SessionCard
                 key={s.id}
-                href={`/app/sessions/${s.id}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-800 card-shine transition hover:border-ink-600"
-              >
-                <Photo
-                  name={photoForActivity(s.activity)}
-                  alt=""
-                  ratio="aspect-[16/10]"
-                  className="w-full"
-                  sizes="(max-width: 1024px) 300px, 340px"
-                />
-                <div className="flex flex-1 flex-col p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-ink-500">
-                    <Glyph name={s.activity} size={13} strokeWidth={2} />
-                    {activityLabel(s.activity)}
-                  </p>
-
-                  <div className="mt-1 flex items-start justify-between gap-2">
-                    <h4 className="min-w-0 font-display text-[15px] font-bold leading-tight text-ink-50">
-                      {s.title}
-                    </h4>
-                    {joined && <Badge tone="ok">Joined</Badge>}
-                  </div>
-
-                  <p className="num mt-1 text-[13px] text-ink-300">
-                    {s.dayLabel} · {s.time}
-                  </p>
-                  <p className="mt-0.5 flex min-w-0 items-center gap-1 text-[13px] text-ink-400">
-                    <Glyph name="pin" size={13} strokeWidth={2} />
-                    <span className="truncate">
-                      {s.location} · {areaLabel(s.area)}
-                    </span>
-                  </p>
-
-                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink-700 pt-3">
-                    {avatars(s.attendeeIds)}
-                    <span className="num text-[11px] font-semibold text-volt-700">
-                      {attending(taken)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
+                session={s}
+                variant="compact"
+                taken={taken}
+                joined={joined}
+                people={s.attendeeIds.map((id) => {
+                  const u = userById(id);
+                  return { initials: u.initials, tone: u.tone };
+                })}
+                sizes="(max-width: 1024px) 300px, 340px"
+              />
             );
           })}
         </div>

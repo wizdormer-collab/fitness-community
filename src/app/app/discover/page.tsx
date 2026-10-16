@@ -8,6 +8,7 @@ import { Button, Chip } from "@/components/ui/controls";
 import { BottomSheet } from "@/components/ui/sheet";
 import { EmptyState, Skeleton } from "@/components/ui/state";
 import { ScreenHeader } from "@/components/ui/header";
+import { SessionCard } from "@/components/ui/session-card";
 import { Photo, photoForActivity } from "@/components/ui/photo";
 import { Star } from "@/components/ui/icons";
 import { Glyph, GlyphTile } from "@/components/ui/glyph";
@@ -162,58 +163,10 @@ function FeaturedCard({
 /* Result cards                                                                 */
 /* -------------------------------------------------------------------------- */
 
-/** Sessions get the photography: they are what carry a date, a venue and attendance. */
-function SessionCard({
-  result,
-  taken,
-  people,
-}: {
-  result: SessionResult;
-  taken: number;
-  people: Person[];
-}) {
-  const s = result.session;
-  return (
-    <Link href={`/app/sessions/${s.id}`} className="block h-full">
-      <Frame>
-        <Photo
-          name={photoForActivity(s.activity)}
-          alt=""
-          ratio="aspect-[16/10]"
-          className="w-full"
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 300px, 340px"
-        />
-        <div className="flex flex-1 flex-col p-4">
-          <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-ink-500">
-            <Glyph name={s.activity} size={13} strokeWidth={2} />
-            {activityLabel(s.activity)}
-          </p>
-          <h3 className="mt-1 font-display text-[15px] font-bold leading-tight text-ink-50">
-            {s.title}
-          </h3>
-          <p className="num mt-1.5 text-[13px] text-ink-300">
-            {s.dayLabel} · {s.time}
-          </p>
-          <p className="mt-0.5 flex min-w-0 items-center gap-1 text-[13px] text-ink-400">
-            <Glyph name="pin" size={13} strokeWidth={2} />
-            <span className="truncate">
-              {s.location} · {areaLabel(s.area)}
-            </span>
-          </p>
-
-          {/* mt-auto pins the footer so a card stretched by a taller neighbour
-              keeps its attendance line on the same baseline. */}
-          <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink-700 pt-3">
-            <AvatarStack size="xs" max={3} people={people} />
-            <span className="num text-[11px] font-semibold text-volt-700">
-              {attending(taken)}
-            </span>
-          </div>
-        </div>
-      </Frame>
-    </Link>
-  );
-}
+/* Sessions render through the shared `SessionCard` (components/ui/session-card),
+   fed from data this page already derives in its dynamic import — capacity and
+   avatars are passed in, so the card never reaches into `@/lib/selectors` and
+   this page's lazy-chunk boundary stays intact. */
 
 /** Communities get their own band, but still honour a category filter. */
 function CommunityCard({ result }: { result: CommunityResult }) {
@@ -635,14 +588,22 @@ export default function Discover() {
                 hint={`${sessions.length} ${sessions.length === 1 ? "session" : "sessions"}`}
               />
               <div className={GRID}>
-                {(sessions as SessionResult[]).map((result) => (
-                  <SessionCard
-                    key={result.id}
-                    result={result}
-                    taken={data.taken[result.id] ?? 0}
-                    people={data.people[result.id] ?? []}
-                  />
-                ))}
+                {(sessions as SessionResult[]).map((result) => {
+                  const taken = data.taken[result.id] ?? 0;
+                  return (
+                    <SessionCard
+                      key={result.id}
+                      session={result.session}
+                      taken={taken}
+                      going={
+                        result.session.attendeeIds.length +
+                        (taken - result.session.spotsTaken)
+                      }
+                      joined={isSessionJoined(result.id)}
+                      people={data.people[result.id] ?? []}
+                    />
+                  );
+                })}
               </div>
             </section>
           )}
