@@ -305,24 +305,30 @@ export default function Progress() {
               const a = activityOf(w.activity);
               return (
                 <ListRow key={w.id} className="px-0 py-3.5">
-                  <span className="flex items-center gap-3.5">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-ink-300">
-                      <Glyph name={a.id} size={21} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="truncate text-sm font-semibold text-ink-100">
-                          {a.label}
-                        </span>
-                        {w.isPR && <Badge tone="volt">PR</Badge>}
+                  {/* Phones: the metrics drop to their own line (indented to
+                      the title) instead of sharing one row and truncating
+                      mid-number. Side-by-side from sm up, as before. */}
+                  <span className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3.5">
+                    <span className="flex min-w-0 items-center gap-3.5 sm:flex-1">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-750 text-ink-300">
+                        <Glyph name={a.id} size={21} />
                       </span>
-                      <span className="num block truncate text-[11px] text-ink-500">
-                        {w.dayLabel} · {w.date} · {duration(w.durationMin)}
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate text-sm font-semibold text-ink-100">
+                            {a.label}
+                          </span>
+                          {w.isPR && <Badge tone="volt">PR</Badge>}
+                        </span>
+                        <span className="num block truncate text-[11px] text-ink-500">
+                          {w.dayLabel} · {w.date} · {duration(w.durationMin)}
+                        </span>
                       </span>
                     </span>
                     {/* Let CSS truncate rather than slicing mid-number — the
-                        column is narrower now that history sits beside records. */}
-                    <span className="num min-w-0 flex-1 truncate text-right text-xs font-semibold text-ink-300">
+                        desktop column is narrower now that history sits beside
+                        records. */}
+                    <span className="num truncate pl-[58px] text-xs font-semibold text-ink-300 sm:min-w-0 sm:flex-1 sm:pl-0 sm:text-right">
                       {w.summary}
                     </span>
                   </span>

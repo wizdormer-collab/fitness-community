@@ -190,6 +190,12 @@ join/check-in live — no second join path on the card itself.
 - `variant="compact"` (Home): no meter, no level, `Joined`-only badge, footer
   keeps the `N people attending` wording.
 
+Layout is responsive in one DOM: below `md` the card is a **row** — 112px
+photo left, info right, ~180px tall (the old full-width 16/10 card ran ~430px,
+more than half a phone screen) — and from `md` up it becomes the photo-top
+card the grids use (`md:flex-col` + `md:aspect-[16/10]`). The `sizes` prop
+carries only the md+ widths; the phone clause (`112px`) is prefixed internally.
+
 Props are presentational on purpose: `taken` arrives already reconciled by the
 page (`visibleSpots` — join/leave moves capacity by one) and avatars arrive as
 `{initials, tone}`, so the module never imports `@/lib/selectors`. That keeps
@@ -312,9 +318,9 @@ app happens at `lg`, so there is no half-desktop state to squeeze.
 | Content frame | `max-w-[440px]` (`max-w-[600px]` from `md`), centred | `lg:pl-[248px]`, content `max-w-[1120px]` centred inside, `px-10` (`px-14` at `xl`) |
 | Home | hero → session → community → nearby → record → callout, all stacked | explicit 12-col placement: hero full width (12); today's session (8) beside your community (4); nearby grid (8) beside the personal record band (4); callout full width |
 | Discover | featured panel stacks (copy then photograph); sessions, places & people and communities each a single column; chip rail scrolls edge-to-edge | same DOM, each of the three sections becomes `lg:grid-cols-3`; the featured session splits into navy copy beside the photograph (`lg:grid-cols-[1.02fr_0.98fr]`); search field capped at `lg:max-w-xl`, chip rail needs no scroll |
-| Sessions | photo session cards (shared `SessionCard`), segmented filter full width | same DOM, `md:grid-cols-2 lg:grid-cols-3` — the Discover grid; segmented filter capped at `lg:max-w-lg` so it does not read as a banner |
+| Sessions | photo session cards (shared `SessionCard`), segmented filter full width | same DOM, `md:grid-cols-2 lg:grid-cols-3` — the Discover grid; cards render as photo-left rows below `md`; segmented filter capped at `lg:max-w-lg` so it does not read as a banner |
 | Session detail | one column: hero → booking panel → organiser → about → attendees → chat | same DOM, `lg:max-w-4xl` with `lg:grid-cols-[minmax(0,1fr)_320px]`; the booking panel is first in the DOM (so the join action stays directly under the hero on mobile) and ordered to the right column at `lg`, where it is sticky |
-| Progress | 2-col stat grid, everything else stacked | same DOM, stats `lg:grid-cols-4`; the goal band is ring + copy + streak chip on a `flex-wrap` row (copy `min-w-[13rem]`, chip `ml-auto` so on phones the chip wraps to its own line instead of crushing the headline); the two chart bands side by side (`lg:grid-cols-2`); records and recent history side by side (`lg:grid-cols-2`) |
+| Progress | 2-col stat grid, everything else stacked | same DOM, stats `lg:grid-cols-4`; the goal band is ring + copy + streak chip on a `flex-wrap` row (copy `min-w-[13rem]`, chip `ml-auto` so on phones the chip wraps to its own line instead of crushing the headline); recent-workout rows drop their metrics to an indented second line below `sm` instead of truncating; the two chart bands side by side (`lg:grid-cols-2`); records and recent history side by side (`lg:grid-cols-2`) |
 | Profile | compact identity block, sections stacked in reading order | same DOM, `lg:grid-cols-2` — profile (identity → about → matched on) left, activity and controls (communities → upcoming → settings → actions) right, so settings stay near the top instead of below a full-width stack |
 | Log workout | segmented → mode fields → details → save, stacked in one column | same DOM, `lg:grid-cols-[minmax(0,1fr)_320px]` — mode fields left, details + save + tags in the right rail (the rail follows the mode section in the DOM, so mobile order is untouched); segmented capped at `lg:max-w-lg`, exercise fields at `lg:max-w-[520px]` so nothing reads as a full-bleed banner or a text area |
 | Onboarding | one column | brand rail left + form card right |

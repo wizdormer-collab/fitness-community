@@ -115,7 +115,7 @@ export default function Sessions() {
                   const u = userById(id);
                   return { initials: u.initials, tone: u.tone };
                 })}
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 300px, 360px"
+                sizes="(max-width: 1024px) 300px, 360px"
                 className="animate-fade-up"
               />
             );

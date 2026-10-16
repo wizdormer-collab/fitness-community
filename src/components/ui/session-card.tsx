@@ -50,13 +50,14 @@ interface SessionCardProps {
   going?: number;
   joined?: boolean;
   variant?: "grid" | "compact";
-  /** Passed through to next/image `sizes` — each grid has a different card
-   *  width, and the default matches Discover's three-column desktop card. */
+  /** next/image `sizes` for the md+ card — each grid has a different card
+   *  width, and the default matches Discover's three-column desktop card.
+   *  The phone row photo is a fixed 112px; that clause is prefixed here. */
   sizes?: string;
   className?: string;
 }
 
-const DEFAULT_SIZES = "(max-width: 768px) 100vw, (max-width: 1024px) 300px, 340px";
+const DEFAULT_SIZES = "(max-width: 1024px) 300px, 340px";
 
 export function SessionCard({
   session,
@@ -90,18 +91,22 @@ export function SessionCard({
     <Link
       href={`/app/sessions/${s.id}`}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-800 card-shine transition hover:-translate-y-0.5 hover:border-ink-600",
+        "group flex overflow-hidden rounded-2xl border border-ink-700 bg-ink-800 card-shine transition hover:-translate-y-0.5 hover:border-ink-600 md:flex-col",
         className,
       )}
     >
+      {/* Below md the card is a row: photo left (width fixed, height from the
+          stretched flex item), info right — a phone-sized card (~180px vs the
+          ~430px a full-width 16/10 photo card would take). At md+, where the
+          grids kick in, the ratio restores the photo-on-top card. */}
       <Photo
         name={photoForActivity(s.activity)}
         alt=""
-        ratio="aspect-[16/10]"
-        className="w-full"
-        sizes={sizes}
+        ratio="md:aspect-[16/10]"
+        className="w-[112px] shrink-0 self-stretch md:w-full"
+        sizes={`(max-width: 767px) 112px, ${sizes}`}
       />
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-3 md:p-4">
         <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-ink-500">
           <Glyph name={s.activity} size={13} strokeWidth={2} />
           {activityLabel(s.activity)}
