@@ -3,9 +3,11 @@ import type {
   Challenge,
   Community,
   DiscoverItem,
+  ProgressSnapshot,
   Session,
   Trainer,
   User,
+  Workout,
 } from "@/lib/types";
 import { DISCOVER_CATEGORIES, type DiscoverCategoryId } from "@/lib/types";
 import { activityLabel, areaLabel } from "@/lib/format";
@@ -13,6 +15,7 @@ import {
   CHALLENGES,
   COMMUNITIES,
   DISCOVER_ITEMS,
+  PROGRESS,
   SESSIONS,
   TRAINERS,
   USERS,
@@ -231,13 +234,146 @@ export function buildDiscoverResults(): DiscoverResult[] {
   return results;
 }
 
+// ---------------------------------------------------------------------------
+// Real PR tracking
+//
+// A personal record is a comparison, not a threshold: a logged set counts as
+// a PR only when it beats the best weight already recorded for that exercise
+// — the seed record table plus every lift logged since, walked oldest first.
+// An exercise with no recorded history sets a silent baseline on its first
+// logged lift and can only PR from the second one onward, so nothing is ever
+// claimed against an empty history. (The rule this replaced flagged any
+// strength set >= 55 kg, so the same 60 kg bench earned "NEW PR" twice.)
+// ---------------------------------------------------------------------------
+
+/** Trim, collapse inner whitespace, case-fold — exercise-name identity. */
+export function normalizeExercise(name: string): string {
+  return name.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/** Best weight (kg) on record for an exercise, or null when it has no history. */
+export function baselineFor(
+  exercise: string,
+  extraWorkouts: Workout[],
+): number | null {
+  const name = normalizeExercise(exercise);
+  if (!name) return null;
+  let best: number | null = null;
+  for (const r of PROGRESS.records) {
+    if (r.unit !== "kg" || normalizeExercise(r.exercise) !== name) continue;
+    const to = Number(r.to);
+    if (Number.isFinite(to)) best = best === null ? to : Math.max(best, to);
+  }
+  for (const w of extraWorkouts) {
+    for (const s of w.strength ?? []) {
+      if (normalizeExercise(s.exercise) !== name) continue;
+      best = best === null ? s.weightKg : Math.max(best, s.weightKg);
+    }
+  }
+  return best;
+}
+
+export interface RecordEvent {
+  exercise: string;
+  from: number;
+  to: number;
+}
+
 /**
- * The seed's own highlight signal — a row only carries a badge because the data
- * says it is popular, verified, filling up or beginner-friendly. No ranking is
- * invented on top of it.
+ * Which rows of a pending workout beat their baseline. Walks the rows in
+ * order and advances the baseline as it goes, so duplicate rows inside one
+ * workout each have to beat the previous one — never the same number twice.
  */
-export function discoverFeatured(results: DiscoverResult[]): DiscoverResult[] {
-  return results.filter((r) => r.kind !== "session" && r.item.badge).slice(0, 3);
+export function recordEvents(
+  rows: { exercise: string; weightKg: number }[],
+  extraWorkouts: Workout[],
+): RecordEvent[] {
+  const events: RecordEvent[] = [];
+  const seen = new Map<string, number>();
+  for (const r of rows) {
+    const name = normalizeExercise(r.exercise);
+    if (!name) continue;
+    const base = seen.get(name) ?? baselineFor(r.exercise, extraWorkouts);
+    if (base === null) {
+      seen.set(name, r.weightKg); // silent first baseline
+      continue;
+    }
+    if (r.weightKg > base) {
+      events.push({ exercise: r.exercise.trim(), from: base, to: r.weightKg });
+      seen.set(name, r.weightKg);
+    }
+  }
+  return events;
+}
+
+/**
+ * The record table Progress renders: the seed rows, with each beaten
+ * exercise replaced in place by its latest improvement (never duplicated),
+ * plus rows for exercises that only exist in the live log. Same rules as
+ * `recordEvents`; `extraWorkouts` is newest-first, so the walk reverses it.
+ */
+export function deriveRecordRows(
+  extraWorkouts: Workout[],
+): ProgressSnapshot["records"] {
+  const baseline = new Map<string, number>();
+  const seeded = new Map<string, string>(); // normalized name -> seed row id (kg rows)
+  for (const r of PROGRESS.records) {
+    if (r.unit !== "kg") continue;
+    const name = normalizeExercise(r.exercise);
+    const to = Number(r.to);
+    if (!name || !Number.isFinite(to)) continue;
+    baseline.set(name, Math.max(baseline.get(name) ?? -Infinity, to));
+    seeded.set(name, r.id);
+  }
+
+  const latest = new Map<string, RecordEvent>();
+  for (const w of [...extraWorkouts].reverse()) {
+    for (const s of w.strength ?? []) {
+      const name = normalizeExercise(s.exercise);
+      if (!name) continue;
+      const base = baseline.get(name) ?? null;
+      if (base === null) {
+        baseline.set(name, s.weightKg); // silent first baseline
+        continue;
+      }
+      if (s.weightKg > base) {
+        latest.set(name, {
+          exercise: s.exercise.trim(),
+          from: base,
+          to: s.weightKg,
+        });
+        baseline.set(name, s.weightKg);
+      }
+    }
+  }
+
+  const rows: ProgressSnapshot["records"] = PROGRESS.records.map((r) => {
+    const name = normalizeExercise(r.exercise);
+    const ev = name ? latest.get(name) : undefined;
+    if (r.unit === "kg" && ev) {
+      return {
+        ...r,
+        from: String(ev.from),
+        to: String(ev.to),
+        ago: "Just now",
+        isNew: true,
+      };
+    }
+    return r;
+  });
+  for (const [name, ev] of latest) {
+    if (seeded.has(name)) continue;
+    rows.push({
+      id: `live-${name.replace(/[^a-z0-9]+/g, "-")}`,
+      exercise: ev.exercise,
+      from: String(ev.from),
+      to: String(ev.to),
+      unit: "kg",
+      ago: "Just now",
+      isNew: true,
+    });
+  }
+  return rows;
 }
 
 /**

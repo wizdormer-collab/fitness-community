@@ -237,6 +237,14 @@ Sheet backdrop and the scanning toast use `scrim`, not `ink-*`, because
 | Profile | 0 (bands + lists) |
 | Onboarding goals/location/level/match | 0 (selectable `List` rows) |
 
+Personal records on Progress (and the `PR` badge on logged rows) are a
+comparison, not a threshold: a set counts only when it beats that exercise's
+recorded best — the seed record table plus every lift logged since, walked
+oldest first (`selectors.deriveRecordRows`). An exercise with no recorded
+history sets a silent baseline on its first logged lift and can PR from the
+second one on. The Log screen judges the same walk live, so its per-row `PR`
+pill (volt on dark, not `Badge`) always agrees with what gets saved.
+
 ---
 
 ## 6. Photography

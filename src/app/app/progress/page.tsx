@@ -16,6 +16,7 @@ import { Chip } from "@/components/ui/controls";
 import { Avatar } from "@/components/ui/avatar";
 import { Glyph } from "@/components/ui/glyph";
 import { usePrototype } from "@/lib/prototype-state";
+import { deriveRecordRows } from "@/lib/selectors";
 import { PROGRESS, WORKOUTS } from "@/lib/mock-data";
 import { activityOf, duration, grouped, plural } from "@/lib/format";
 
@@ -63,22 +64,11 @@ export default function Progress() {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const records = state.extraWorkouts.some((w) => w.isPR)
-    ? [
-        ...state.extraWorkouts
-          .filter((w) => w.isPR)
-          .map((w) => ({
-            id: w.id,
-            exercise: w.prNote ?? "New record",
-            from: "",
-            to: w.summary,
-            unit: "",
-            ago: "Just now",
-            isNew: true,
-          })),
-        ...PROGRESS.records,
-      ]
-    : PROGRESS.records;
+  // Records are derived, never asserted: the seed table with each beaten
+  // exercise replaced in place by its latest real improvement. The walk (seed
+  // record table + every logged lift, oldest first) lives in selectors, so
+  // the row shown here and the PR judged on Log cannot disagree.
+  const records = deriveRecordRows(state.extraWorkouts);
 
   const recent = [...state.extraWorkouts, ...WORKOUTS].slice(0, 6);
   const avgMin = Math.round(state.trainingMinutes / Math.max(1, state.totalWorkouts));

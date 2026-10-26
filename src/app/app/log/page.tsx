@@ -6,6 +6,12 @@ import { Button, SegmentedControl, Tag, Toggle } from "@/components/ui/controls"
 import { List, ListRow, SectionHeader } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/header";
 import { usePrototype } from "@/lib/prototype-state";
+import {
+  baselineFor,
+  normalizeExercise,
+  recordEvents,
+  type RecordEvent,
+} from "@/lib/selectors";
 import { activityOf, pace } from "@/lib/format";
 import { ACTIVITIES, type ActivityId } from "@/lib/types";
 import { Glyph } from "@/components/ui/glyph";
@@ -24,7 +30,7 @@ let uid = 0;
 
 export default function LogWorkout() {
   const router = useRouter();
-  const { addWorkout, profile } = usePrototype();
+  const { addWorkout, profile, state } = usePrototype();
 
   const [mode, setMode] = useState<Mode>("strength");
   const [rows, setRows] = useState<SetRow[]>([
@@ -49,15 +55,43 @@ export default function LogWorkout() {
   const removeRow = (id: number) =>
     setRows((r) => (r.length > 1 ? r.filter((row) => row.id !== id) : r));
 
-  // The record note must name the lift that actually produced the top weight.
-  // It used to say "Bench" unconditionally, so a 60 kg squat reached Progress
-  // as "Bench 60kg" — a fabricated attribution on a screen that exists to
-  // report real training data.
-  const topRow = rows.reduce(
-    (best, r) => (r.weightKg > best.weightKg ? r : best),
-    rows[0]!,
+  // A PR is a comparison, not a threshold. The rule this replaces — any
+  // strength set ≥ 55 kg — stamped "NEW PR" on the same 60 kg bench every
+  // time it was logged. Each row is now measured against that exercise's
+  // recorded best (the seed record table plus every lift logged since, walked
+  // in order by the selectors), and only a real improvement counts; an
+  // exercise with no recorded history cannot claim one. Run and "other" logs
+  // never flag a PR, exactly as before.
+  const prEvents =
+    mode === "strength" ? recordEvents(rows, state.extraWorkouts) : [];
+
+  // The saved workout names the event with the biggest weight gain — that is
+  // the record worth putting in prNote.
+  const topEvent = prEvents.reduce<RecordEvent | null>(
+    (best, e) =>
+      !best ||
+      e.to - e.from > best.to - best.from ||
+      (e.to - e.from === best.to - best.from && e.to > best.to)
+        ? e
+        : best,
+    null,
   );
-  const topWeight = topRow.weightKg;
+
+  // Live per-row "PR" pills, judged with the same walk that will judge the
+  // workout on save, so the hint on a row can never disagree with the result.
+  const rowBeatsRecord = new Map<number, boolean>();
+  if (mode === "strength") {
+    const seen = new Map<string, number>();
+    for (const r of rows) {
+      const name = normalizeExercise(r.exercise);
+      const base = name
+        ? (seen.get(name) ?? baselineFor(r.exercise, state.extraWorkouts))
+        : null;
+      rowBeatsRecord.set(r.id, base !== null && r.weightKg > base);
+      if (name && (base === null || r.weightKg > base))
+        seen.set(name, r.weightKg);
+    }
+  }
 
   // Redirect timer, held in a ref so it can be cancelled: choosing "Log
   // another" on the saved screen used to leave the push armed, and the user
@@ -104,11 +138,8 @@ export default function LogWorkout() {
       durationMin,
       location: location || undefined,
       sharedToFeed: shared,
-      isPR: isStrength && topWeight >= 55,
-      prNote:
-        isStrength && topWeight >= 55
-          ? `${topRow.exercise.trim() || "Top set"} ${topWeight}kg`
-          : undefined,
+      isPR: prEvents.length > 0,
+      prNote: topEvent ? `${topEvent.exercise} ${topEvent.to}kg` : undefined,
       strength: isStrength
         ? rows.map((r) => ({
             exercise: r.exercise || "Exercise",
@@ -202,6 +233,18 @@ export default function LogWorkout() {
                     placeholder="Exercise name"
                     className="min-w-0 flex-1 rounded-lg border border-ink-700 bg-ink-850 px-3 py-2 text-sm font-semibold text-ink-100 outline-none placeholder:font-normal placeholder:text-ink-600 focus:border-volt-400"
                   />
+                  {rowBeatsRecord.get(r.id) && (
+                    // Volt-on-dark pill, not <Badge>: the tone badges are
+                    // tuned for the cream surfaces and this row sits on the
+                    // dark Log card. It appears the moment the weight beats
+                    // this exercise's recorded best.
+                    <span
+                      title="Beats your recorded best for this exercise"
+                      className="inline-flex shrink-0 items-center self-center rounded-full bg-volt-400 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-onvolt"
+                    >
+                      PR
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeRow(r.id)}
